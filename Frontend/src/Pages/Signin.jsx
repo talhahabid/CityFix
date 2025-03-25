@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useSignIn } from "../hooks/useSignIn";
+import { Link } from "react-router-dom";
 
 function Signin() {
+  const { signin, loading, error } = useSignIn();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -14,10 +17,15 @@ function Signin() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Signin Data:', formData);
-    alert('Sign-in Successful');
+    const { email, password } = formData;
+
+    try {
+      await signin(email, password);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -63,11 +71,15 @@ function Signin() {
           type="submit"
           className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition"
         >
-          Login
+          {loading ? "Loading" : "Login"}
         </button>
+        <p className='text-red-500 text-center'>{error ? error : ""}</p>
       </form>
     </div>
   );
 }
 
 export default Signin;
+
+
+

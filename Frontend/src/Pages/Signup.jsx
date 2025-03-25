@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useSignUp } from "../hooks/useSignUp";
 
 function Signup() {
+  const { signup, loading, error } = useSignUp();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,12 +16,16 @@ function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
-    alert("Account Created");
-  };
+    const { email, password } = formData;
 
+    try {
+      await signup(email, password);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form
@@ -64,11 +70,11 @@ function Signup() {
           type="submit"
           className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition"
         >
-          Create Account
+          {loading ? "Loading" : "Create Account"}
         </button>
+        <p className="text-center text-red-400">{error ? error : ""}</p>
       </form>
     </div>
   );
 }
-
-export default Signup;
+export default Signup
