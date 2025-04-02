@@ -1,0 +1,7 @@
+FRONTEND
+    -> CitizenPage - make better
+                    
+
+BACKEND
+    -> Citizen and Council login and authentication
+    -> Form 

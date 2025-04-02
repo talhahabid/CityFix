@@ -28,6 +28,11 @@ const formSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+
+  reportStatus: {
+    type: String,
+    default: "Pending" 
+  }
 });
 
 const Form = mongoose.model("Form", formSchema);

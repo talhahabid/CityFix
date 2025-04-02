@@ -4,20 +4,19 @@ import Home from "./Pages/Home";
 import Signup from "./Pages/Signup";
 import Signin from "./Pages/Signin";
 import CitizenHome from "./Pages/CitizenHome";
+import CouncilHome from "./Pages/CouncilHome";
 
 function App() {
   return (
     <Router>
-
       <Routes>
         <Route path="/citizen" element={<CitizenHome />} />
         <Route path="/" element={<Home />} />
+        <Route path="/council" element={<CouncilHome />} />
+
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
-
-
       </Routes>
-
     </Router>
   );
 }

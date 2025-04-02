@@ -9,8 +9,9 @@ const createToken = (id) => {
 };
 
 export const signup = async (req, res, next) => {
+  const USER_TYPE = "citizen";
   const { email, password } = req.body;
-  const newUser = new User({ email, password });
+  const newUser = new User({ email, password, USER_TYPE });
 
   try {
     const existingEmail = await User.findOne({ email });
@@ -35,13 +36,11 @@ export const signin = async (req, res, next) => {
 
     if (existingEmail.password == password) {
       const jwtToken = createToken(existingEmail._id);
-      res
-        .status(200)
-        .json({
-          user: existingEmail,
-          jwtToken,
-          message: "User log in success",
-        });
+      res.status(200).json({
+        user: existingEmail,
+        jwtToken,
+        message: "User log in success",
+      });
     } else {
       return next(errorHandler(401, "Incorrect password"));
     }

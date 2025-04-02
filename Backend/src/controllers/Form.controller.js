@@ -26,3 +26,16 @@ export const submitForm = async (req, res, next) => {
     next(errorHandler(503, error.message));
   }
 };
+
+export const getForms = async (req, res, next) => {
+  console.log("Working");
+  try {
+    const forms = await Form.find();
+    console.log("Working");
+
+    res.status(200).json(forms);
+    console.log("Working");
+  } catch (error) {
+    next(errorHandler(503, error.message));
+  }
+};
