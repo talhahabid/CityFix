@@ -11,19 +11,20 @@ const createToken = (id) => {
 export const signup = async (req, res, next) => {
   const USER_TYPE = "citizen";
   const { email, password } = req.body;
-  const newUser = new User({ email, password, USER_TYPE });
+  const newUser = new User({ email, password, userType: USER_TYPE });
 
   try {
+    // console.log("Working1")
     const existingEmail = await User.findOne({ email });
     if (existingEmail) return next(errorHandler(409, "Email already exists"));
-
+    // console.log("Working1")
     const temp = await newUser.save();
     const jwtToken = createToken(temp._id);
     res
       .status(201)
       .json({ user: temp, jwtToken, message: "User sign up success" });
   } catch (error) {
-    next(errorHandler(503, "Failed To Create User"));
+    next(errorHandler(503, error.message));
   }
 };
 
