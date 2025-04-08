@@ -10,7 +10,7 @@ import Navbar from "./components/Navbar";
 function App() {
   return (
     <Router>
-      <Navbar /> {/* Move Navbar outside of Routes */}
+    {/* <Navbar /> Move Navbar outside of Routes */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/citizen" element={<CitizenHome />} />

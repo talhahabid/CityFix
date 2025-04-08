@@ -17,10 +17,9 @@ function CouncilHome() {
       try {
         const fetchedData = await getForms();
         if (Array.isArray(fetchedData)) {
-          // Filter out expired reports here
           const filteredData = fetchedData.filter((report) => {
             const daysPassed = dayjs().diff(dayjs(report.dateSubmitted), "day");
-            return daysPassed < 30 || !["Resolved", "Rejected"].includes(report.reportStatus);
+            return report.reportStatus !== "Resolved" || daysPassed < 30;
           });
           setData(filteredData);
         } else {
@@ -30,9 +29,10 @@ function CouncilHome() {
         console.error("Error fetching data:", err);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
   const handleStatusUpdate = async (_id) => {
     const newStatus = selectedStatus[_id];
@@ -65,26 +65,22 @@ function CouncilHome() {
   const statusColor = {
     Resolved: "bg-green-100 text-green-700",
     Ongoing: "bg-yellow-100 text-yellow-700",
-    Rejected: "bg-red-100 text-red-700",
   };
 
   // Filter logic
   const filteredData =
     selectedCategory === "All"
       ? data
-      : data.filter(
-          (report) =>
-            report.reportStatus === selectedCategory
-        );
+      : selectedCategory === "Flagged"
+      ? data.filter((report) => flaggedReports[report._id])
+      : data.filter((report) => report.reportStatus === selectedCategory);
 
-  const sidebarItems = ["All", "Ongoing", "Resolved", "Rejected", "Flagged"];
+  const sidebarItems = ["All", "Ongoing", "Resolved", "Flagged"];
 
   return (
     <div className="flex">
-      
       {/* Sidebar */}
       <div className="w-1/5 bg-gray-100 p-4 h-full min-h-screen shadow-md">
-      
         <h3 className="text-xl font-semibold mb-4">📂 Categories</h3>
         <ul className="space-y-2">
           {sidebarItems.map((item) => (
@@ -106,7 +102,6 @@ function CouncilHome() {
 
       {/* Main content */}
       <div className="w-4/5 p-6">
-
         <div className="flex justify-end mb-6">
           <button
             onClick={() => getForms().then(setData)}
@@ -122,9 +117,8 @@ function CouncilHome() {
         {filteredData.length > 0 ? (
           <div className="grid md:grid-cols-2 gap-6">
             {filteredData.map((report) => {
-              // Calculate time passed and remaining time
               const daysPassed = dayjs().diff(dayjs(report.dateSubmitted), "day");
-              const isExpiring = ["Resolved", "Rejected"].includes(report.reportStatus);
+              const isExpiring = report.reportStatus === "Resolved";
               const daysRemaining = 30 - daysPassed;
 
               return (
@@ -135,10 +129,20 @@ function CouncilHome() {
                   <div className="flex justify-between items-start mb-2">
                     <div />
                     <div className="text-right text-sm text-gray-500 italic">
-                      <p>🕒 {daysPassed === 0 ? "Today" : `${daysPassed} day${daysPassed > 1 ? "s" : ""} ago`}</p>
+                      <p>
+                        🕒{" "}
+                        {daysPassed === 0
+                          ? "Today"
+                          : `${daysPassed} day${daysPassed > 1 ? "s" : ""} ago`}
+                      </p>
                       {isExpiring && (
                         <p className={daysRemaining <= 0 ? "text-red-500" : ""}>
-                          ⏳ {daysRemaining <= 0 ? "Expired" : `Expires in ${daysRemaining} day${daysRemaining > 1 ? "s" : ""}`}
+                          ⏳{" "}
+                          {daysRemaining <= 0
+                            ? "Expired"
+                            : `Expires in ${daysRemaining} day${
+                                daysRemaining > 1 ? "s" : ""
+                              }`}
                         </p>
                       )}
                     </div>
@@ -148,10 +152,17 @@ function CouncilHome() {
                     <h3 className="text-xl font-semibold text-gray-800 mb-1">
                       📝 {report.problemType}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-1">📍 Location: {report.location}</p>
+                    <p className="text-sm text-gray-600 mb-1">
+                      📍 Location: {report.location}
+                    </p>
                     <p className="text-sm mb-2">
                       📊 Status:{" "}
-                      <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${statusColor[report.reportStatus] || "bg-gray-200 text-gray-800"}`}>
+                      <span
+                        className={`inline-block px-2 py-1 rounded text-sm font-medium ${
+                          statusColor[report.reportStatus] ||
+                          "bg-gray-200 text-gray-800"
+                        }`}
+                      >
                         {report.reportStatus}
                       </span>
                     </p>
@@ -173,14 +184,16 @@ function CouncilHome() {
                       <select
                         value={selectedStatus[report._id] || ""}
                         onChange={(e) =>
-                          setSelectedStatus((prev) => ({ ...prev, [report._id]: e.target.value }))
+                          setSelectedStatus((prev) => ({
+                            ...prev,
+                            [report._id]: e.target.value,
+                          }))
                         }
                         className="border rounded px-2 py-1"
                       >
                         <option value="">Select</option>
                         <option value="Ongoing">Ongoing</option>
                         <option value="Resolved">Resolved</option>
-                        <option value="Rejected">Rejected</option> {/* Restored Rejected */}
                       </select>
                     </div>
                   </div>
@@ -189,7 +202,10 @@ function CouncilHome() {
                     placeholder="📝 Optional notes..."
                     value={notes[report._id] || ""}
                     onChange={(e) =>
-                      setNotes((prev) => ({ ...prev, [report._id]: e.target.value }))
+                      setNotes((prev) => ({
+                        ...prev,
+                        [report._id]: e.target.value,
+                      }))
                     }
                     rows={2}
                     className="w-full border rounded px-3 py-2 mb-3 text-sm"
@@ -211,7 +227,8 @@ function CouncilHome() {
                       }`}
                       disabled={flaggedReports[report._id]}
                     >
-                      🚩 {flaggedReports[report._id] ? "Flagged" : "Flag as False"}
+                      🚩{" "}
+                      {flaggedReports[report._id] ? "Flagged" : "Flag as False"}
                     </button>
                   </div>
                 </div>
@@ -219,7 +236,9 @@ function CouncilHome() {
             })}
           </div>
         ) : (
-          <p className="text-center text-gray-600 text-lg">No reports found for selected category.</p>
+          <p className="text-center text-gray-600 text-lg">
+            No reports found for selected category.
+          </p>
         )}
       </div>
     </div>
