@@ -15,8 +15,8 @@ function CitizenHome() {
     image: null,
     receiveNotification: false,
   });
-  const [mapCenter, setMapCenter] = useState([51.505, -0.09]); // Default to London
-  const [zoomLevel, setZoomLevel] = useState(13); // Default zoom level
+  const [mapCenter, setMapCenter] = useState([51.505, -0.09]);
+  const [zoomLevel, setZoomLevel] = useState(13);
   const [marker, setMarker] = useState(null);
   const inputRef = useRef(null);
 
@@ -43,7 +43,7 @@ function CitizenHome() {
       const { lat, lon, display_name } = data[0];
       setFormData((prev) => ({ ...prev, location: display_name }));
       setMapCenter([parseFloat(lat), parseFloat(lon)]);
-      setZoomLevel(15); // Zoom in more after finding the location
+      setZoomLevel(15);
       setMarker([parseFloat(lat), parseFloat(lon)]);
     }
   };
@@ -58,12 +58,26 @@ function CitizenHome() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-lg">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-100 p-6">
+      
+      {/* 🧾 Instruction Card */}
+      <div className="bg-gray-800 border border-gray-700 text-gray-100 rounded-lg p-4 w-full max-w-lg mb-6">
+        <h2 className="text-lg font-semibold mb-2">🛠 How to Report an Issue</h2>
+        <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
+          <li>📍 Enter the location manually or use the map to drop a pin.</li>
+          <li>⚠️ Describe the problem clearly (e.g. pothole, streetlight out).</li>
+          <li>📷 Upload an optional image to help identify the issue.</li>
+          <li>📩 Enable notifications if you'd like to receive updates.</li>
+          <li>🚀 Click "Submit" to send your report to the city team.</li>
+        </ul>
+      </div>
+
+      {/* 🔒 Form Container */}
+      <div className="bg-gray-800 border border-gray-700 shadow-lg rounded-lg p-6 w-full max-w-lg">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-semibold text-gray-800">Citizen Report</h1>
+          <h1 className="text-xl font-semibold">📝 Citizen Report</h1>
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+            className="bg-red-600 hover:bg-red-700 transition px-4 py-2 rounded-lg text-white"
             onClick={signOut}
           >
             Logout
@@ -72,44 +86,46 @@ function CitizenHome() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-700 font-medium">Location</label>
+            <label className="block font-medium mb-1">📍 Location</label>
             <input
               type="text"
               name="location"
               value={formData.location}
               onChange={handleChange}
               ref={inputRef}
-              className="border p-2 w-full rounded-md focus:ring focus:ring-blue-200"
+              className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              placeholder="Enter location"
             />
             <button
               type="button"
               onClick={fetchCoordinates}
-              className="mt-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+              className="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition"
             >
-              Search Location
+              🔍 Search Location
             </button>
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium">Problem Type</label>
+            <label className="block font-medium mb-1">⚠️ Problem Type</label>
             <input
               type="text"
               name="problemType"
               value={formData.problemType}
               onChange={handleChange}
-              className="border p-2 w-full rounded-md focus:ring focus:ring-blue-200"
+              className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              placeholder="e.g. Broken streetlight"
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium">Upload Image</label>
+            <label className="block font-medium mb-1">📷 Upload Image</label>
             <input
               type="file"
               name="image"
               onChange={handleChange}
-              className="border p-2 w-full rounded-md focus:ring focus:ring-blue-200"
+              className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               accept="image/*"
             />
           </div>
@@ -120,24 +136,24 @@ function CitizenHome() {
               name="receiveNotification"
               checked={formData.receiveNotification}
               onChange={handleChange}
-              className="h-5 w-5 text-blue-500 focus:ring focus:ring-blue-200"
+              className="h-5 w-5 text-blue-500 bg-gray-700 border-gray-600 focus:ring focus:ring-blue-500"
             />
-            <span className="text-gray-700">Receive Notifications</span>
+            <span>📩 Receive Notifications</span>
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-400 text-sm">⚠️ {error}</p>}
 
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50 w-full"
             disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
           >
-            {loading ? "Submitting..." : "Submit"}
+            {loading ? "Submitting..." : "🚀 Submit"}
           </button>
         </form>
       </div>
 
-      {/* Always Visible Map Below Location Input */}
+      {/* 🗺️ Map */}
       <div className="mt-6 w-full max-w-lg">
         <MapContainer center={mapCenter} zoom={zoomLevel} style={{ width: "100%", height: "300px" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
