@@ -19,7 +19,7 @@ export const useSignIn = () => {
 
     localStorage.setItem("user", JSON.stringify(data));
     dispatch({ type: "LOGIN", payload: data });
-    navigate("/");
+    navigate("/citizen");
   };
 
   return { signin, loading, error };

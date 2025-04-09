@@ -1,13 +1,12 @@
 import mongoose from "mongoose";
 
 const formSchema = new mongoose.Schema({
-
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  
+
   location: {
     type: String,
     required: true,
@@ -31,8 +30,13 @@ const formSchema = new mongoose.Schema({
 
   reportStatus: {
     type: String,
-    default: "Pending" 
-  }
+    default: "Pending",
+  },
+
+  note: {
+    type: String,
+    default: "",
+  },
 });
 
 const Form = mongoose.model("Form", formSchema);

@@ -22,7 +22,7 @@ export const useSignUp = () => {
       if (data) {
         localStorage.setItem("user", JSON.stringify(data));
         dispatch({ type: "LOGIN", payload: data });
-        navigate("/");
+        navigate("/citizen");
       }
     } catch (err) {
       console.error("Signup failed:", err.message);

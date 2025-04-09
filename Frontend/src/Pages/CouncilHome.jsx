@@ -36,10 +36,11 @@ function CouncilHome() {
 
   const handleStatusUpdate = async (_id) => {
     const newStatus = selectedStatus[_id];
+    const note = notes[_id] || ""; // Capture the note for this report
     if (!newStatus) return;
 
     try {
-      const updatedReport = await editForm(_id, newStatus, notes[_id] || "");
+      const updatedReport = await editForm(_id, newStatus, note); // Include note in the update
       if (updatedReport) {
         setData((prev) =>
           prev.map((report) =>

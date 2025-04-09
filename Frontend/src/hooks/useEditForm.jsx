@@ -5,7 +5,7 @@ export const useEditForm = () => {
   const { user } = useAuthContext();
   const { loading, error, makeApiCall } = useApi();
 
-  const editForm = async (_id, reportStatus) => {
+  const editForm = async (_id, reportStatus, notes) => {
     if (!user) return;
 
     try {
@@ -16,7 +16,7 @@ export const useEditForm = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${user.jwtToken}`,
           },
-          body: JSON.stringify({ reportStatus }),
+          body: JSON.stringify({ reportStatus, notes }),
         })
       );
       return data;

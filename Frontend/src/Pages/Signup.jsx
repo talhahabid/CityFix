@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSignUp } from "../hooks/useSignUp";
+import { Link } from "react-router-dom";
 
 function Signup() {
   const { signup, loading, error } = useSignUp();
@@ -33,7 +34,9 @@ function Signup() {
         onSubmit={handleSubmit}
         className="bg-gray-800 text-gray-100 p-8 rounded-2xl shadow-lg w-full max-w-md space-y-6"
       >
-        <h2 className="text-3xl font-semibold text-center">Create an Account</h2>
+        <h2 className="text-3xl font-semibold text-center">
+          Create an Account
+        </h2>
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-1">
@@ -70,7 +73,7 @@ function Signup() {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+          className={`cursor-pointer w-full py-2 px-4 rounded-lg font-medium transition-colors ${
             loading
               ? "bg-blue-400 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700"
@@ -78,10 +81,14 @@ function Signup() {
         >
           {loading ? "Creating Account..." : "Sign Up"}
         </button>
+        {error && <p className="text-center text-red-400 text-sm">{error}</p>}
 
-        {error && (
-          <p className="text-center text-red-400 text-sm">{error}</p>
-        )}
+        <p className="text-sm text-center text-gray-400">
+          Already have an account?{" "}
+          <Link to="/signin" className="text-blue-400 hover:underline">
+            Sign in
+          </Link>
+        </p>
       </form>
     </div>
   );

@@ -41,20 +41,20 @@ export const getForms = async (req, res, next) => {
 };
 
 export const editFormStatus = async (req, res, next) => {
-  const { _id } = req.params;
+  const { _id, note } = req.params;
   const { reportStatus } = req.body;
 
   try {
     const form = await Form.findById(_id);
     if (!form) return next();
 
-    form.reportStatus = reportStatus
-    
+    form.reportStatus = reportStatus;
+    form.note = note;
 
     await form.save();
 
     res.status(200).json({
-      message: "Form updated successfully"
+      message: "Form updated successfully",
     });
   } catch (error) {
     return next(error);

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { useSignIn } from "../hooks/useSignIn";
+import { useSignIn } from "../hooks/useSignIn"; // Assuming useSignIn is the same for council
 import { Link } from "react-router-dom";
 
-function Signin() {
+function CouncilSignin() {
   const { signin, loading, error } = useSignIn();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    employeeId: "", // New field for employee ID
   });
 
   const handleChange = (e) => {
@@ -19,10 +20,10 @@ function Signin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { email, password } = formData;
+    const { email, password, employeeId } = formData;
 
     try {
-      await signin(email, password);
+      await signin(email, password, employeeId); // Make sure signin can handle employeeId
     } catch (err) {
       console.error(err);
     }
@@ -34,7 +35,7 @@ function Signin() {
         onSubmit={handleSubmit}
         className="bg-gray-800 text-gray-100 p-8 rounded-2xl shadow-lg w-full max-w-md space-y-6"
       >
-        <h2 className="text-3xl font-semibold text-center">Welcome Back</h2>
+        <h2 className="text-3xl font-semibold text-center">Council Login</h2>
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-1">
@@ -68,6 +69,22 @@ function Signin() {
           />
         </div>
 
+        <div>
+          <label htmlFor="employeeId" className="block text-sm font-medium mb-1">
+            Employee ID
+          </label>
+          <input
+            id="employeeId"
+            type="text"
+            name="employeeId"
+            placeholder="Enter your Employee ID"
+            value={formData.employeeId}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+          />
+        </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -83,16 +100,9 @@ function Signin() {
         {error && (
           <p className="text-center text-red-400 text-sm">{error}</p>
         )}
-
-        <p className="text-sm text-center text-gray-400">
-          Don’t have an account?{" "}
-          <Link to="/signup" className="text-blue-400 hover:underline">
-            Sign up
-          </Link>
-        </p>
       </form>
     </div>
   );
 }
 
-export default Signin;
+export default CouncilSignin;
