@@ -11,6 +11,7 @@ import CouncilSignin from "./Pages/CouncilSignin";
 import Profile from "./Pages/Profile";
 import SubmitReport from "./Pages/SubmitReport";
 import ViewReports from "./Pages/ViewReports";
+import SubmitSucess from "./Pages/SubmitSucess";
 
 function App() {
   const { user } = useAuthContext();
@@ -31,6 +32,7 @@ function App() {
         <Route exact path="/view-report" element={user?.user?.userType === "citizen" ? <ViewReports /> : user?.user?.userType === "council" ? <CouncilHome /> : <Signin />} />
 
         <Route path="/council" element={<CouncilHome />} />
+        <Route path="/submission-successful" element={<SubmitSucess />} />
         {/* <Route path="/signup" element={<Signup />} /> */}
         {/* <Route path="/signin" element={<Signin />} /> */}
       </Routes>

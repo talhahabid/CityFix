@@ -1,14 +1,17 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSignOut } from "../hooks/useSignOut";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useSubmitForm } from "../hooks/useSubmitForm";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 
 function SubmitReport() {
   const { submitForm, loading, error } = useSubmitForm();
   const { user } = useAuthContext();
   const { signOut } = useSignOut();
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     location: "",
     problemType: "",
@@ -18,7 +21,20 @@ function SubmitReport() {
   const [mapCenter, setMapCenter] = useState([51.505, -0.09]);
   const [zoomLevel, setZoomLevel] = useState(13);
   const [marker, setMarker] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const inputRef = useRef(null);
+
+  // Handle redirect after successful submission
+  useEffect(() => {
+    if (isSubmitted) {
+      const redirectTimer = setTimeout(() => {
+        navigate("/submission-successful");
+        // Or navigate("/"); if you want to go back to home
+      }, 2000);
+      
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [isSubmitted, navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -30,7 +46,19 @@ function SubmitReport() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await submitForm(formData);
+    
+    try {
+      const result = await submitForm(formData);
+      
+      // Check if submission was successful
+      // This depends on how your submitForm function indicates success
+      if (!error) {
+        console.log("Form submitted successfully");
+        setIsSubmitted(true);
+      }
+    } catch (err) {
+      console.error("Error submitting form:", err);
+    }
   };
 
   const fetchCoordinates = async () => {
@@ -142,13 +170,18 @@ function SubmitReport() {
           </div>
 
           {error && <p className="text-red-400 text-sm">⚠️ {error}</p>}
+          {isSubmitted && (
+            <div className="bg-green-800 border border-green-600 text-green-100 p-3 rounded-md">
+              ✅ Report submitted successfully! Redirecting...
+            </div>
+          )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isSubmitted}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
           >
-            {loading ? "Submitting..." : "🚀 Submit"}
+            {loading ? "Submitting..." : isSubmitted ? "Submitted ✓" : "🚀 Submit"}
           </button>
         </form>
       </div>
