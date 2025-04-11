@@ -20,7 +20,7 @@ function CouncilHome() {
   // New helper function to initialize flagged reports
   const initializeFlaggedReports = (reports) => {
     const flagged = {};
-    reports.forEach(report => {
+    reports.forEach((report) => {
       if (report.reportStatus === "Flagged") {
         flagged[report._id] = true;
       }
@@ -90,14 +90,15 @@ function CouncilHome() {
   };
 
   const handleDelete = async (_id) => {
+    console.log(_id);
     try {
       const success = await deleteForm(_id);
       if (success) {
-        setData((prev) => prev.filter(report => report._id !== _id));
+        setData((prev) => prev.filter((report) => report._id !== _id));
         setSelectedReport(null);
         setShowDeleteConfirm(false);
       } else {
-        throw new Error('Delete operation failed');
+        throw new Error("Delete operation failed");
       }
     } catch (err) {
       console.error("Error deleting report:", err);
@@ -205,9 +206,16 @@ function CouncilHome() {
 
                     <div className="space-y-2 text-gray-400 flex-grow">
                       <p>📍 {report.location}</p>
-                      <p>🕒 {dayjs(report.dateCreated).format("MMMM D, YYYY h:mm A")}</p>
+                      <p>
+                        🕒{" "}
+                        {dayjs(report.dateCreated).format(
+                          "MMMM D, YYYY h:mm A"
+                        )}
+                      </p>
                       {report.reportStatus === "Resolved" && (
-                        <p>⏳ Expires: {calculateExpiryDate(report.dateCreated)}</p>
+                        <p>
+                          ⏳ Expires: {calculateExpiryDate(report.dateCreated)}
+                        </p>
                       )}
                     </div>
 
@@ -240,13 +248,15 @@ function CouncilHome() {
                   <h2 className="text-2xl font-bold text-gray-200 mb-1">
                     📝 {selectedReport.problemType}
                   </h2>
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                    selectedReport.reportStatus === "Resolved"
-                      ? "bg-green-500/20 text-green-300"
-                      : selectedReport.reportStatus === "Ongoing"
-                      ? "bg-yellow-500/20 text-yellow-300"
-                      : "bg-red-500/20 text-red-300"
-                  }`}>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      selectedReport.reportStatus === "Resolved"
+                        ? "bg-green-500/20 text-green-300"
+                        : selectedReport.reportStatus === "Ongoing"
+                        ? "bg-yellow-500/20 text-yellow-300"
+                        : "bg-red-500/20 text-red-300"
+                    }`}
+                  >
                     {selectedReport.reportStatus}
                   </span>
                 </div>
@@ -265,18 +275,29 @@ function CouncilHome() {
                   <div className="space-y-6">
                     <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-400">Location</label>
-                        <p className="mt-1 text-gray-200">📍 {selectedReport.location}</p>
+                        <label className="text-sm font-medium text-gray-400">
+                          Location
+                        </label>
+                        <p className="mt-1 text-gray-200">
+                          📍 {selectedReport.location}
+                        </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-400">Submitted On</label>
+                        <label className="text-sm font-medium text-gray-400">
+                          Submitted On
+                        </label>
                         <p className="mt-1 text-gray-200">
-                          🕒 {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}
+                          🕒{" "}
+                          {dayjs(selectedReport.dateCreated).format(
+                            "MMMM D, YYYY h:mm A"
+                          )}
                         </p>
                       </div>
                       {selectedReport.reportStatus === "Resolved" && (
                         <div>
-                          <label className="text-sm font-medium text-gray-400">Expires On</label>
+                          <label className="text-sm font-medium text-gray-400">
+                            Expires On
+                          </label>
                           <p className="mt-1 text-gray-200">
                             ⏳ {calculateExpiryDate(selectedReport.dateCreated)}
                           </p>
@@ -285,18 +306,27 @@ function CouncilHome() {
                     </div>
 
                     {/* Details & Notes */}
-                    {(selectedReport.details || (selectedReport.note && selectedReport.note.trim())) && (
+                    {(selectedReport.details ||
+                      (selectedReport.note && selectedReport.note.trim())) && (
                       <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
                         {selectedReport.details && (
                           <div>
-                            <label className="text-sm font-medium text-gray-400">Additional Details</label>
-                            <p className="mt-1 text-gray-200">{selectedReport.details}</p>
+                            <label className="text-sm font-medium text-gray-400">
+                              Additional Details
+                            </label>
+                            <p className="mt-1 text-gray-200">
+                              {selectedReport.details}
+                            </p>
                           </div>
                         )}
                         {selectedReport.note && selectedReport.note.trim() && (
                           <div>
-                            <label className="text-sm font-medium text-gray-400">Citizen Note</label>
-                            <p className="mt-1 text-gray-200">{selectedReport.note}</p>
+                            <label className="text-sm font-medium text-gray-400">
+                              Citizen Note
+                            </label>
+                            <p className="mt-1 text-gray-200">
+                              {selectedReport.note}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -370,7 +400,9 @@ function CouncilHome() {
                   <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
                     {showFlagConfirm && (
                       <>
-                        <p className="text-red-300 mb-4">Are you sure you want to flag this report as false?</p>
+                        <p className="text-red-300 mb-4">
+                          Are you sure you want to flag this report as false?
+                        </p>
                         <div className="flex gap-3">
                           <button
                             onClick={() => handleFlagReport(selectedReport._id)}
@@ -389,7 +421,10 @@ function CouncilHome() {
                     )}
                     {showDeleteConfirm && (
                       <>
-                        <p className="text-red-300 mb-4">Are you sure you want to delete this report? This cannot be undone.</p>
+                        <p className="text-red-300 mb-4">
+                          Are you sure you want to delete this report? This
+                          cannot be undone.
+                        </p>
                         <div className="flex gap-3">
                           <button
                             onClick={() => handleDelete(selectedReport._id)}
@@ -416,7 +451,8 @@ function CouncilHome() {
                       >
                         ✅ Update Status
                       </button>
-                      {selectedReport.reportStatus !== "Flagged" && !flaggedReports[selectedReport._id] ? (
+                      {selectedReport.reportStatus !== "Flagged" &&
+                      !flaggedReports[selectedReport._id] ? (
                         <button
                           onClick={() => setShowFlagConfirm(true)}
                           className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
@@ -438,10 +474,12 @@ function CouncilHome() {
                         🗑️ Delete Report
                       </button>
                     </div>
-                    {(selectedReport.reportStatus === "Flagged" || flaggedReports[selectedReport._id]) && (
+                    {(selectedReport.reportStatus === "Flagged" ||
+                      flaggedReports[selectedReport._id]) && (
                       <div className="bg-gray-700/20 border border-gray-600 rounded-lg p-3">
                         <p className="text-gray-300 text-sm">
-                          🚩 This report has been flagged as false and is under review
+                          🚩 This report has been flagged as false and is under
+                          review
                         </p>
                       </div>
                     )}

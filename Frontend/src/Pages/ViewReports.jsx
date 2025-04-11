@@ -97,7 +97,7 @@ function ViewReports() {
                   onClick={() => setSelectedReport(report)}
                   className="mt-6 w-full px-4 py-2 bg-blue-600/90 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <span></span> View Details
+                  <span>👁️</span> View Details
                 </button>
               </div>
             ))
@@ -160,12 +160,6 @@ function ViewReports() {
                           <p className="mt-1 text-gray-200">
                             ⏳ {calculateExpiryDate(selectedReport.dateCreated)}
                           </p>
-                        </div>
-                      )}
-                      {selectedReport.note && selectedReport.note.trim() !== "" && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-400">Additional Details</label>
-                          <p className="mt-1 text-gray-200">{selectedReport.note}</p>
                         </div>
                       )}
                     </div>

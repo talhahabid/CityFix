@@ -11,7 +11,7 @@ export const useDeleteForm = () => {
 
     try {
       const response = await makeApiCall(() =>
-        fetch(`${apiBaseUrl}council/deleteForm/${_id}`, { // Changed from citizen to council
+        fetch(`${apiBaseUrl}citizen/deleteForm/${_id}`, { // Changed from citizen to council
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
