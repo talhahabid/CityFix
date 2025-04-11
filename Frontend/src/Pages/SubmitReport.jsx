@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { useSignOut } from "../hooks/useSignOut";
-import { useAuthContext } from "../hooks/useAuthContext";
 import { useSubmitForm } from "../hooks/useSubmitForm";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
@@ -10,27 +9,23 @@ function SubmitReport() {
   const { submitForm, loading, error } = useSubmitForm();
   const { signOut } = useSignOut();
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     location: "",
     problemType: "",
     image: null,
     receiveNotification: false,
+    additionalDetails: "",
   });
-  const [mapCenter, setMapCenter] = useState([51.505, -0.09]);
-  const [zoomLevel, setZoomLevel] = useState(13);
+  const [mapCenter, setMapCenter] = useState([43.65107, -79.347015]); // Default to Toronto
   const [marker, setMarker] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const inputRef = useRef(null);
 
-  // Handle redirect after successful submission
   useEffect(() => {
     if (isSubmitted) {
       const redirectTimer = setTimeout(() => {
         navigate("/submission-successful");
-        // Or navigate("/"); if you want to go back to home
       }, 2000);
-      
       return () => clearTimeout(redirectTimer);
     }
   }, [isSubmitted, navigate]);
@@ -45,152 +40,164 @@ function SubmitReport() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    if (!formData.location) {
+      alert("Please select a location on the map.");
+      return;
+    }
+
     try {
-      const result = await submitForm(formData);
-      
-      // Check if submission was successful
-      // This depends on how your submitForm function indicates success
-      if (!error) {
-        console.log("Form submitted successfully");
-        setIsSubmitted(true);
-      }
+      await submitForm(formData);
+      setIsSubmitted(true);
     } catch (err) {
       console.error("Error submitting form:", err);
     }
   };
 
-  const fetchCoordinates = async () => {
-    if (!formData.location) return;
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${formData.location}`
-    );
-    const data = await response.json();
-    if (data.length > 0) {
-      const { lat, lon, display_name } = data[0];
-      setFormData((prev) => ({ ...prev, location: display_name }));
-      setMapCenter([parseFloat(lat), parseFloat(lon)]);
-      setZoomLevel(15);
-      setMarker([parseFloat(lat), parseFloat(lon)]);
-    }
-  };
-
-  function LocationMarker() {
+  const LocationMarker = () => {
     useMapEvents({
       click(e) {
-        setMarker([e.latlng.lat, e.latlng.lng]);
+        const { lat, lng } = e.latlng;
+        setMarker([lat, lng]);
+        setFormData((prev) => ({
+          ...prev,
+          location: `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`,
+        }));
       },
     });
     return marker ? <Marker position={marker} /> : null;
-  }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-100 p-6">
-      
-      {/* 🧾 Instruction Card */}
-      <div className="bg-gray-800 border border-gray-700 text-gray-100 rounded-lg p-4 w-full max-w-lg mb-6">
-        <h2 className="text-lg font-semibold mb-2">🛠 How to Report an Issue</h2>
-        <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
-          <li>📍 Enter the location manually or use the map to drop a pin.</li>
-          <li>⚠️ Describe the problem clearly (e.g. pothole, streetlight out).</li>
-          <li>📷 Upload an optional image to help identify the issue.</li>
-          <li>📩 Enable notifications if you'd like to receive updates.</li>
-          <li>🚀 Click "Submit" to send your report to the city team.</li>
-        </ul>
-      </div>
-
-      {/* 🔒 Form Container */}
-      <div className="bg-gray-800 border border-gray-700 shadow-lg rounded-lg p-6 w-full max-w-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-semibold">📝 Citizen Report</h1>
-          <button
-            className="bg-red-600 hover:bg-red-700 transition px-4 py-2 rounded-lg text-white"
-            onClick={signOut}
-          >
-            Logout
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block font-medium mb-1">📍 Location</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              ref={inputRef}
-              className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              placeholder="Enter location"
-            />
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Submit a Report</h1>
+          <div className="flex gap-4">
             <button
-              type="button"
-              onClick={fetchCoordinates}
-              className="mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition"
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white"
+              onClick={() => navigate("/Citizen")}
             >
-              🔍 Search Location
+              Back to Home
+            </button>
+            <button
+              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white"
+              onClick={signOut}
+            >
+              Logout
             </button>
           </div>
+        </div>
 
-          <div>
-            <label className="block font-medium mb-1">⚠️ Problem Type</label>
-            <input
-              type="text"
-              name="problemType"
-              value={formData.problemType}
-              onChange={handleChange}
-              className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              placeholder="e.g. Broken streetlight"
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Form Section */}
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-semibold mb-4">📝 Report Details</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block font-medium mb-1">📍 Location</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Select a location on the map"
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">⚠️ Problem Type</label>
+                <input
+                  type="text"
+                  name="problemType"
+                  value={formData.problemType}
+                  onChange={handleChange}
+                  className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                  placeholder="e.g. Broken streetlight"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">📷 Upload Image</label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    name="image"
+                    onChange={handleChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    accept="image/*"
+                  />
+                  <div className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    {formData.image ? formData.image.name : "Choose a file..."}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">🗒️ Additional Details (Optional)</label>
+                <textarea
+                  name="additionalDetails"
+                  value={formData.additionalDetails || ""}
+                  onChange={handleChange}
+                  className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Provide more details about the issue (optional)"
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="receiveNotification"
+                  checked={formData.receiveNotification}
+                  onChange={handleChange}
+                  className="h-5 w-5 text-blue-500 bg-gray-700 border-gray-600 focus:ring focus:ring-blue-500"
+                />
+                <span>📩 Receive Notifications</span>
+              </div>
+
+              {error && <p className="text-red-400 text-sm">⚠️ {error}</p>}
+              {isSubmitted && (
+                <div className="bg-green-800 border border-green-600 text-green-100 p-3 rounded-md">
+                  ✅ Report submitted successfully! Redirecting...
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || isSubmitted}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
+              >
+                {loading ? "Submitting..." : isSubmitted ? "Submitted ✓" : "🚀 Submit"}
+              </button>
+            </form>
           </div>
 
-          <div>
-            <label className="block font-medium mb-1">📷 Upload Image</label>
-            <input
-              type="file"
-              name="image"
-              onChange={handleChange}
-              className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              accept="image/*"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="receiveNotification"
-              checked={formData.receiveNotification}
-              onChange={handleChange}
-              className="h-5 w-5 text-blue-500 bg-gray-700 border-gray-600 focus:ring focus:ring-blue-500"
-            />
-            <span>📩 Receive Notifications</span>
-          </div>
-
-          {error && <p className="text-red-400 text-sm">⚠️ {error}</p>}
-          {isSubmitted && (
-            <div className="bg-green-800 border border-green-600 text-green-100 p-3 rounded-md">
-              ✅ Report submitted successfully! Redirecting...
+          {/* Map Section */}
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-semibold mb-4">📍 Select Location</h2>
+            <div className="h-64 rounded-lg overflow-hidden">
+              <MapContainer
+                center={mapCenter}
+                zoom={13}
+                className="h-full w-full"
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <LocationMarker />
+              </MapContainer>
             </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || isSubmitted}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition disabled:opacity-50 w-full"
-          >
-            {loading ? "Submitting..." : isSubmitted ? "Submitted ✓" : "🚀 Submit"}
-          </button>
-        </form>
-      </div>
-
-      {/* 🗺️ Map */}
-      <div className="mt-6 w-full max-w-lg">
-        <MapContainer center={mapCenter} zoom={zoomLevel} style={{ width: "100%", height: "300px" }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <LocationMarker />
-        </MapContainer>
+            {marker && (
+              <p className="mt-4 text-sm text-gray-400">
+                Selected Location: {formData.location}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

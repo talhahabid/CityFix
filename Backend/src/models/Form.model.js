@@ -30,7 +30,7 @@ const formSchema = new mongoose.Schema({
 
   reportStatus: {
     type: String,
-    default: "Pending",
+    default: "Ongoing",
   },
 
   note: {

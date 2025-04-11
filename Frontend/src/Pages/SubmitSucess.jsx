@@ -61,14 +61,14 @@ function SubmissionSuccessful() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/Citizen')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
           >
             Return to Home
           </button>
           
           <button 
-            onClick={() => navigate('/citizen')}
+            onClick={() => navigate('/submit-report')}
             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
           >
             Submit Another Report
