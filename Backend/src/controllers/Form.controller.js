@@ -17,7 +17,6 @@ export const submitForm = async (req, res, next) => {
     const existingProblemAndLocation = await Form.findOne({
       location,
       problemType,
-      note,
     });
 
     if (existingProblemAndLocation)
