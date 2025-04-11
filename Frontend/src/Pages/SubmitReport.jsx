@@ -64,14 +64,28 @@ function SubmitReport() {
     }
   };
 
+  const getAddressFromCoords = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+      );
+      const data = await response.json();
+      return data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    } catch (err) {
+      console.error("Error getting address:", err);
+      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    }
+  };
+
   const LocationMarker = () => {
     useMapEvents({
-      click(e) {
+      async click(e) {
         const { lat, lng } = e.latlng;
         setMarker([lat, lng]);
+        const address = await getAddressFromCoords(lat, lng);
         setFormData((prev) => ({
           ...prev,
-          location: `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`,
+          location: address,
         }));
       },
     });
@@ -104,8 +118,7 @@ function SubmitReport() {
                   value={formData.location}
                   onChange={handleChange}
                   className="bg-gray-900 border border-gray-600 text-gray-100 p-2 w-full rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Select a location on the map"
-                  readOnly
+                  placeholder="Enter address or select on map"
                 />
               </div>
 
