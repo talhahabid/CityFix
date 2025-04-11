@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useGetForm } from "../hooks/useGetForms";
 import { useEditForm } from "../hooks/useEditForm";
-import { useDeleteForm } from "../hooks/useDeleteForm"; // Add this import
+import { useDeleteForm } from "../hooks/useDeleteForm";
 import dayjs from "dayjs";
 
 function CouncilHome() {
   const { getForms, loading, error } = useGetForm();
   const { editForm } = useEditForm();
-  const { deleteForm } = useDeleteForm(); // Add this
+  const { deleteForm } = useDeleteForm();
   const [data, setData] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState({});
   const [councilNotes, setcouncilNotes] = useState({});
@@ -17,6 +17,8 @@ function CouncilHome() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFlagConfirm, setShowFlagConfirm] = useState(false);
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+  const [showFlagSuccess, setShowFlagSuccess] = useState(false);
+  const [deletedReportId, setDeletedReportId] = useState(null);
 
   // New helper function to initialize flagged reports
   const initializeFlaggedReports = (reports) => {
@@ -53,6 +55,10 @@ function CouncilHome() {
   }, []);
 
   const handleStatusUpdate = async (_id) => {
+    // Prevent status update if report is flagged
+    if (flaggedReports[_id] || data.find(report => report._id === _id)?.reportStatus === "Flagged") {
+      return;
+    }
     const newStatus = selectedStatus[_id];
     const councilNote = councilNotes[_id] || "";
     if (!newStatus) return;
@@ -77,16 +83,24 @@ function CouncilHome() {
   const handleFlagReport = async (_id) => {
     try {
       await editForm(_id, "Flagged", "This report has been flagged as false.");
+      setShowFlagConfirm(false);
+      setShowFlagSuccess(true);
+
+      // Update data states
       setData((prev) =>
         prev.map((report) =>
           report._id === _id ? { ...report, reportStatus: "Flagged" } : report
         )
       );
       setFlaggedReports((prev) => ({ ...prev, [_id]: true }));
-      setShowFlagConfirm(false);
+
+      // Auto close after 2 seconds
+      setTimeout(() => {
+        setSelectedReport(null);
+        setShowFlagSuccess(false);
+      }, 2000);
     } catch (err) {
       console.error("Error flagging report:", err);
-      alert("Failed to flag the report. Please try again.");
     }
   };
 
@@ -94,19 +108,20 @@ function CouncilHome() {
     try {
       const success = await deleteForm(_id);
       if (success) {
+        // Immediately remove the report from the data state for UI update
+        setData((prev) => prev.filter((report) => report._id !== _id));
+        setDeletedReportId(_id);
+        
+        // Close confirmation and show success message
         setShowDeleteConfirm(false);
-        setSelectedReport(null); // Close the modal immediately
-
-        // Refresh the data by calling getForms
-        const refreshedData = await getForms();
-        if (Array.isArray(refreshedData)) {
-          const filteredData = refreshedData.filter((report) => {
-            const daysPassed = dayjs().diff(dayjs(report.dateCreated), "day");
-            return report.reportStatus !== "Resolved" || daysPassed < 30;
-          });
-          setData(filteredData);
-          setFlaggedReports(initializeFlaggedReports(filteredData));
-        }
+        setShowDeleteSuccess(true);
+        
+        // Auto close modal after 2 seconds
+        setTimeout(() => {
+          setSelectedReport(null);
+          setShowDeleteSuccess(false);
+          setDeletedReportId(null);
+        }, 2000);
       }
     } catch (err) {
       console.error("Error deleting report:", err);
@@ -133,6 +148,14 @@ function CouncilHome() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200 p-6">
+      {/* Success message notification (outside of modal) */}
+      {deletedReportId && showDeleteSuccess && (
+        <div className="fixed top-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl z-50 animate-fadeIn flex items-center gap-2">
+          <span className="text-xl">✅</span>
+          <span>Report deleted successfully</span>
+        </div>
+      )}
+      
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 bg-gray-800 p-6 rounded-lg shadow-lg">
           <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -192,7 +215,9 @@ function CouncilHome() {
                 {filteredData.map((report) => (
                   <div
                     key={report._id}
-                    className="bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 flex flex-col h-full"
+                    className={`bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 flex flex-col h-full ${
+                      deletedReportId === report._id ? "animate-fadeOut" : ""
+                    }`}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="text-xl font-semibold text-gray-200">
@@ -356,7 +381,12 @@ function CouncilHome() {
                               [selectedReport._id]: e.target.value,
                             }))
                           }
-                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-200"
+                          disabled={flaggedReports[selectedReport._id] || selectedReport.reportStatus === "Flagged"}
+                          className={`w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-200 ${
+                            (flaggedReports[selectedReport._id] || selectedReport.reportStatus === "Flagged") 
+                            ? "opacity-50 cursor-not-allowed" 
+                            : ""
+                          }`}
                         >
                           <option value="">Select new status</option>
                           <option value="Ongoing">Ongoing</option>
@@ -403,7 +433,33 @@ function CouncilHome() {
 
               {/* Footer */}
               <div className="p-6 border-t border-gray-700">
-                {showDeleteConfirm ? (
+                {showFlagConfirm ? (
+                  <div className="bg-gray-700/20 border border-gray-600 rounded-lg p-4">
+                    <p className="text-gray-300 mb-4">
+                      Are you sure you want to flag this report as false? Once flagged, the status cannot be changed.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleFlagReport(selectedReport._id)}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                      >
+                        Confirm Flag
+                      </button>
+                      <button
+                        onClick={() => setShowFlagConfirm(false)}
+                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : showFlagSuccess ? (
+                  <div className="bg-green-900/20 border border-green-500/50 rounded-lg p-4">
+                    <p className="text-green-300">
+                      ✅ Report flagged successfully. Closing shortly...
+                    </p>
+                  </div>
+                ) : showDeleteConfirm ? (
                   <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
                     <p className="text-red-300 mb-4">
                       Are you sure you want to delete this report? This cannot

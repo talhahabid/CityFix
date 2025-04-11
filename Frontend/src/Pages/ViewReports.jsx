@@ -39,6 +39,10 @@ function ViewReports() {
     return dayjs(dateSubmitted).add(30, "day").format("MMMM D, YYYY");
   };
 
+  // Find flagged reports
+  const flaggedReports = userReports.filter(report => report.reportStatus === "Flagged");
+  const fineAmount = flaggedReports.length > 1 ? (flaggedReports.length - 1) * 100 : 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200 p-6">
       <div className="max-w-7xl mx-auto">
@@ -62,13 +66,28 @@ function ViewReports() {
           </div>
         </div>
 
-        {/* Main content */}
+        {/* Display warning for a single flagged report */}
+        {flaggedReports.length === 1 && (
+          <div className="mb-6 p-4 bg-red-700/20 text-red-400 rounded-lg text-center">
+            ⚠️ Warning: Your report "{flaggedReports[0].problemType}" has been flagged by the council.
+          </div>
+        )}
+
+        {/* Display fine for multiple flagged reports */}
+        {flaggedReports.length > 1 && (
+          <div className="mb-6 p-4 bg-red-700/20 text-red-400 rounded-lg text-center text-xl font-bold">
+            ⚠️ You have {flaggedReports.length} flagged reports. Fine: ${fineAmount}
+          </div>
+        )}
+
+        {/* Reports Grid */}
         <div className="grid md:grid-cols-2 gap-6">
           {userReports.length > 0 ? (
             userReports.map((report) => (
               <div
                 key={report._id}
-                className="bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 flex flex-col h-full"
+                className={`bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 flex flex-col h-full
+                ${report.reportStatus === "Flagged" ? "border-red-500/50" : ""}`}
               >
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-semibold text-gray-200">
@@ -79,6 +98,8 @@ function ViewReports() {
                       ? "bg-green-500/20 text-green-300"
                       : report.reportStatus === "Ongoing"
                       ? "bg-yellow-500/20 text-yellow-300"
+                      : report.reportStatus === "Flagged"
+                      ? "bg-red-500/20 text-red-300"
                       : "bg-gray-500/20 text-gray-300"
                   }`}>
                     {report.reportStatus}
@@ -92,6 +113,10 @@ function ViewReports() {
                     <p>⏳ Expires: {calculateExpiryDate(report.dateCreated)}</p>
                   )}
                 </div>
+
+                {report.reportStatus === "Flagged" && (
+                  <p className="mt-4 text-red-400 font-semibold">🚨 This report has been flagged by the council.</p>
+                )}
 
                 <button
                   onClick={() => setSelectedReport(report)}
@@ -125,10 +150,10 @@ function ViewReports() {
                       ? "bg-green-500/20 text-green-300"
                       : selectedReport.reportStatus === "Ongoing"
                       ? "bg-yellow-500/20 text-yellow-300"
-                      : "bg-red-500/20 text-red-300"
-                  }`}>
-                    {selectedReport.reportStatus}
-                  </span>
+                      : selectedReport.reportStatus === "Flagged"
+                      ? "bg-red-500/20 text-red-300"
+                      : "bg-gray-500/20 text-gray-300"
+                  }`}>{selectedReport.reportStatus}</span>
                 </div>
                 <button
                   onClick={() => setSelectedReport(null)}
@@ -141,46 +166,11 @@ function ViewReports() {
               {/* Content */}
               <div className="p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Column */}
                   <div className="space-y-6">
-                    <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-400">Location</label>
-                        <p className="mt-1 text-gray-200">📍 {selectedReport.location}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-400">Submitted On</label>
-                        <p className="mt-1 text-gray-200">
-                          🕒 {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}
-                        </p>
-                      </div>
-                      {selectedReport.reportStatus === "Resolved" && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-400">Expires On</label>
-                          <p className="mt-1 text-gray-200">
-                            ⏳ {calculateExpiryDate(selectedReport.dateCreated)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Citizen's Note Section */}
-                    {selectedReport.note && selectedReport.note.trim() !== "" && (
-                      <div className="bg-gray-700/20 rounded-lg p-4">
-                        <label className="text-sm font-medium text-gray-400">Additional Details</label>
-                        <p className="mt-1 text-gray-200">{selectedReport.note}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Column */}
-                  <div className="space-y-6">
-                    {/* Council's Feedback Section */}
-                    {selectedReport.councilNote && selectedReport.councilNote.trim() !== "" && (
-                      <div className="bg-gray-700/20 rounded-lg p-4">
-                        <label className="text-sm font-medium text-gray-400">Council's Response</label>
-                        <p className="mt-1 text-gray-200">{selectedReport.councilNote}</p>
-                      </div>
+                    <p>📍 {selectedReport.location}</p>
+                    <p>🕒 {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}</p>
+                    {selectedReport.reportStatus === "Flagged" && (
+                      <p className="text-red-400 font-semibold">🚨 This report has been flagged by the council.</p>
                     )}
                   </div>
                 </div>

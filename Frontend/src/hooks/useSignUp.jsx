@@ -2,6 +2,7 @@ import { useAuthContext } from "./useAuthContext";
 import { useNavigate } from "react-router-dom";
 import { useApi } from "./useApi";
 const apiBaseUrl = import.meta.env.VITE_API_URL;
+
 export const useSignUp = () => {
   const { loading, error, makeApiCall } = useApi();
   const { dispatch } = useAuthContext();

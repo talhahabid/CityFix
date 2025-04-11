@@ -8,6 +8,7 @@ function Signup() {
     email: "",
     password: "",
   });
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,9 +23,16 @@ function Signup() {
     const { email, password } = formData;
 
     try {
-      await signup(email, password);
+      // Show success message 
+      setIsSuccess(true);
+      
+      // Wait 2 seconds before calling signup
+      setTimeout(() => {
+        signup(email, password);
+      }, 2000);
     } catch (err) {
       console.error(err);
+      setIsSuccess(false);
     }
   };
 
@@ -70,16 +78,22 @@ function Signup() {
           />
         </div>
 
+        {isSuccess && (
+          <div className="py-2 px-4 bg-green-500/20 text-green-300 rounded-lg text-center font-medium animate-pulse">
+            Account Successfully Created! Redirecting to dashboard...
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || isSuccess}
           className={`cursor-pointer w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-            loading
+            loading || isSuccess
               ? "bg-blue-400 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700"
           } text-white`}
         >
-          {loading ? "Creating Account..." : "Sign Up"}
+          {loading ? "Creating Account..." : isSuccess ? "Success!" : "Sign Up"}
         </button>
         {error && <p className="text-center text-red-400 text-sm">{error}</p>}
 
