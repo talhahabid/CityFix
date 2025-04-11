@@ -60,6 +60,11 @@ function CouncilHome() {
     const confirm = window.confirm("Are you sure you want to flag this report as false?");
     if (confirm) {
       setFlaggedReports((prev) => ({ ...prev, [_id]: true }));
+      setData((prev) =>
+        prev.map((report) =>
+          report._id === _id ? { ...report, reportStatus: "Flagged" } : report
+        )
+      );
       alert("🚩 Report flagged successfully!");
     }
   };

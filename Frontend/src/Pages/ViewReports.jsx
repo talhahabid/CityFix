@@ -120,16 +120,6 @@ function ViewReports() {
                 🗒️ Additional Details: {selectedReport.additionalDetails}
               </p>
             )}
-            {selectedReport.receiveNotification && (
-              <p className="text-sm text-gray-400 mb-4">
-                📩 Notifications Enabled: Yes
-              </p>
-            )}
-            {selectedReport.note && (
-              <p className="text-sm text-gray-400 mb-4">
-                📝 Council Feedback: {selectedReport.note}
-              </p>
-            )}
             {selectedReport.imageUrl && (
               <div className="mb-4">
                 <p className="text-sm text-gray-400 mb-2">📷 Uploaded Image:</p>
@@ -139,6 +129,16 @@ function ViewReports() {
                   className="w-full rounded-lg max-h-64 object-cover"
                 />
               </div>
+            )}
+            {selectedReport.receiveNotification && (
+              <p className="text-sm text-gray-400 mb-4">
+                📩 Notifications Enabled: Yes
+              </p>
+            )}
+            {selectedReport.note && (
+              <p className="text-sm text-gray-400 mb-4">
+                📝 Council Feedback: {selectedReport.note}
+              </p>
             )}
             <button
               onClick={() => setSelectedReport(null)}
