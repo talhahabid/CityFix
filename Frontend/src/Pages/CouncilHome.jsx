@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useGetForm } from "../hooks/useGetForms";
 import { useEditForm } from "../hooks/useEditForm";
+import { useDeleteForm } from "../hooks/useDeleteForm"; // Add this import
 import dayjs from "dayjs";
 
 function CouncilHome() {
   const { getForms, loading, error } = useGetForm();
   const { editForm } = useEditForm();
+  const { deleteForm } = useDeleteForm(); // Add this
   const [data, setData] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState({});
   const [notes, setNotes] = useState({});
   const [flaggedReports, setFlaggedReports] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedReport, setSelectedReport] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showFlagConfirm, setShowFlagConfirm] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,24 +61,34 @@ function CouncilHome() {
   };
 
   const handleFlagReport = async (_id) => {
-    const confirm = window.confirm("Are you sure you want to flag this report as false?");
-    if (confirm) {
-      try {
-        // Update the status to "Flagged" in the backend
-        await editForm(_id, "Flagged", "This report has been flagged as false.");
-        
-        // Update the local state
-        setFlaggedReports((prev) => ({ ...prev, [_id]: true }));
-        setData((prev) =>
-          prev.map((report) =>
-            report._id === _id ? { ...report, reportStatus: "Flagged" } : report
-          )
-        );
-        alert("🚩 Report flagged successfully!");
-      } catch (err) {
-        console.error("Error flagging report:", err);
-        alert("Failed to flag the report. Please try again.");
+    try {
+      await editForm(_id, "Flagged", "This report has been flagged as false.");
+      setData((prev) =>
+        prev.map((report) =>
+          report._id === _id ? { ...report, reportStatus: "Flagged" } : report
+        )
+      );
+      setFlaggedReports((prev) => ({ ...prev, [_id]: true }));
+      setShowFlagConfirm(false);
+    } catch (err) {
+      console.error("Error flagging report:", err);
+      alert("Failed to flag the report. Please try again.");
+    }
+  };
+
+  const handleDelete = async (_id) => {
+    try {
+      const success = await deleteForm(_id);
+      if (success) {
+        setData((prev) => prev.filter(report => report._id !== _id));
+        setSelectedReport(null);
+        setShowDeleteConfirm(false);
+      } else {
+        throw new Error('Failed to delete report');
       }
+    } catch (err) {
+      console.error("Error deleting report:", err);
+      alert("Failed to delete report. Please try again.");
     }
   };
 
@@ -97,194 +111,330 @@ function CouncilHome() {
   const sidebarItems = ["All", "Ongoing", "Resolved", "Flagged"];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <h1 className="text-3xl font-bold">Council Dashboard</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="text-blue-500">🏛️</span> Council Dashboard
+          </h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => getForms().then(setData)}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow transition-all duration-200 flex items-center gap-2"
+            >
+              <span>🔄</span> Refresh Reports
+            </button>
+          </div>
         </div>
 
-        <div className="flex">
+        <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
-          <div className="w-1/5 bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h3 className="text-xl font-semibold mb-4">📂 Categories</h3>
-            <ul className="space-y-2">
-              {sidebarItems.map((item) => (
-                <li key={item}>
-                  <button
-                    className={`w-full text-left px-4 py-2 rounded-lg ${
-                      selectedCategory === item
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                    }`}
-                    onClick={() => setSelectedCategory(item)}
-                  >
-                    {item}
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <div className="w-full md:w-1/5">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg sticky top-6">
+              <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                <span className="text-blue-500">📂</span> Categories
+              </h3>
+              <ul className="space-y-3">
+                {sidebarItems.map((item) => (
+                  <li key={item}>
+                    <button
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
+                        selectedCategory === item
+                          ? "bg-blue-600 text-white shadow-lg transform scale-105"
+                          : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:transform hover:scale-102"
+                      }`}
+                      onClick={() => setSelectedCategory(item)}
+                    >
+                      {item}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Main content */}
-          <div className="w-4/5 pl-6">
-            <div className="flex justify-end mb-6">
-              <button
-                onClick={() => getForms().then(setData)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow"
-              >
-                🔄 Refresh Reports
-              </button>
-            </div>
-
-            {loading && <p className="text-center text-lg">Loading reports...</p>}
-            {error && <p className="text-red-500 text-center">Error: {error.message}</p>}
+          <div className="flex-1">
+            {loading && (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-lg mb-6">
+                ⚠️ Error: {error.message}
+              </div>
+            )}
 
             {filteredData.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-6">
                 {filteredData.map((report) => (
                   <div
                     key={report._id}
-                    className="bg-gray-800 shadow-lg hover:shadow-xl transition duration-200 border border-gray-700 rounded-lg p-6"
+                    className="bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 flex flex-col h-full"
                   >
-                    <h3 className="text-xl font-semibold text-gray-200 mb-1">
-                      📝 {report.problemType}
-                    </h3>
-                    <p className="text-sm text-gray-400 mb-1">
-                      📍 Location: {report.location}
-                    </p>
-                    <p className="text-sm mb-2">
-                      📊 Status:{" "}
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-xl font-semibold text-gray-200">
+                        📝 {report.problemType}
+                      </h3>
                       <span
-                        className={`inline-block px-2 py-1 rounded text-sm font-medium ${
-                          statusColor[report.reportStatus] || "text-gray-400"
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          report.reportStatus === "Resolved"
+                            ? "bg-green-500/20 text-green-300"
+                            : report.reportStatus === "Ongoing"
+                            ? "bg-yellow-500/20 text-yellow-300"
+                            : "bg-gray-500/20 text-gray-300"
                         }`}
                       >
                         {report.reportStatus}
                       </span>
-                    </p>
-                    {report.reportStatus === "Resolved" && (
-                      <p className="text-sm text-gray-400 mb-2">
-                        ⏳ Expires on: {calculateExpiryDate(report.dateCreated)}
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-400">
-                      🕒 Submitted on:{" "}
-                      {dayjs(report.dateCreated).format("MMMM D, YYYY h:mm A")}
-                    </p>
-                    {report.details && (
-                      <p className="text-gray-400 text-sm mt-2">🗒️ {report.details}</p>
-                    )}
-                    {report.imageUrl && (
-                      <img
-                        src={report.imageUrl}
-                        alt="Uploaded evidence"
-                        className="w-full mt-3 rounded-lg max-h-64 object-cover"
-                      />
-                    )}
-                    <div className="mt-4 flex gap-3">
-                      <button
-                        onClick={() => setSelectedReport(report)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow"
-                      >
-                        View Full Details
-                      </button>
                     </div>
+
+                    <div className="space-y-2 text-gray-400 flex-grow">
+                      <p>📍 {report.location}</p>
+                      <p>🕒 {dayjs(report.dateCreated).format("MMMM D, YYYY h:mm A")}</p>
+                      {report.reportStatus === "Resolved" && (
+                        <p>⏳ Expires: {calculateExpiryDate(report.dateCreated)}</p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => setSelectedReport(report)}
+                      className="mt-6 w-full px-4 py-2 bg-blue-600/90 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                      <span>👁️</span> View Details
+                    </button>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-400 text-lg">
-                No reports found for selected category.
-              </p>
+              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg p-8 text-center">
+                <p className="text-xl text-gray-400">No reports found</p>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal with fixed positioning and scroll */}
       {selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-3/4 max-w-lg">
-            <h2 className="text-2xl font-bold text-gray-200 mb-4">
-              📝 {selectedReport.problemType}
-            </h2>
-            <p className="text-sm text-gray-400 mb-2">
-              📍 Location: {selectedReport.location}
-            </p>
-            <p className="text-sm text-gray-400 mb-2">
-              🕒 Submitted on:{" "}
-              {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}
-            </p>
-            {selectedReport.reportStatus === "Resolved" && (
-              <p className="text-sm text-gray-400 mb-2">
-                ⏳ Expires on: {calculateExpiryDate(selectedReport.dateCreated)}
-              </p>
-            )}
-            <p className="text-sm text-gray-400 mb-4">
-              📊 Status:{" "}
-              <span
-                className={`inline-block px-2 py-1 rounded text-sm font-medium ${
-                  statusColor[selectedReport.reportStatus] || "text-gray-400"
-                }`}
-              >
-                {selectedReport.reportStatus}
-              </span>
-            </p>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Update Status:
-              </label>
-              <select
-                value={selectedStatus[selectedReport._id] || ""}
-                onChange={(e) =>
-                  setSelectedStatus((prev) => ({
-                    ...prev,
-                    [selectedReport._id]: e.target.value,
-                  }))
-                }
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm text-gray-200"
-              >
-                <option value="">Select</option>
-                <option value="Ongoing">Ongoing</option>
-                <option value="Resolved">Resolved</option>
-              </select>
-            </div>
-            <textarea
-              placeholder="📝 Optional feedback..."
-              value={notes[selectedReport._id] || ""}
-              onChange={(e) =>
-                setNotes((prev) => ({
-                  ...prev,
-                  [selectedReport._id]: e.target.value,
-                }))
-              }
-              rows={3}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-4 text-sm text-gray-200"
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleStatusUpdate(selectedReport._id)}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-              >
-                ✅ Update Status
-              </button>
-              <button
-                onClick={() => handleFlagReport(selectedReport._id)}
-                className={`px-4 py-2 rounded-lg text-white ${
-                  flaggedReports[selectedReport._id]
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-                disabled={flaggedReports[selectedReport._id]}
-              >
-                🚩 {flaggedReports[selectedReport._id] ? "Flagged" : "Flag as False"}
-              </button>
-              <button
-                onClick={() => setSelectedReport(null)}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
-              >
-                ❌ Close
-              </button>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-screen px-4 py-8 flex items-center justify-center">
+            <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl relative">
+              {/* Header */}
+              <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-200 mb-1">
+                    📝 {selectedReport.problemType}
+                  </h2>
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                    selectedReport.reportStatus === "Resolved"
+                      ? "bg-green-500/20 text-green-300"
+                      : selectedReport.reportStatus === "Ongoing"
+                      ? "bg-yellow-500/20 text-yellow-300"
+                      : "bg-red-500/20 text-red-300"
+                  }`}>
+                    {selectedReport.reportStatus}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSelectedReport(null)}
+                  className="p-2 hover:bg-gray-700 rounded-full transition-colors text-gray-400 hover:text-gray-200"
+                >
+                  ❌
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column - Basic Info */}
+                  <div className="space-y-6">
+                    <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-400">Location</label>
+                        <p className="mt-1 text-gray-200">📍 {selectedReport.location}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-400">Submitted On</label>
+                        <p className="mt-1 text-gray-200">
+                          🕒 {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}
+                        </p>
+                      </div>
+                      {selectedReport.reportStatus === "Resolved" && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-400">Expires On</label>
+                          <p className="mt-1 text-gray-200">
+                            ⏳ {calculateExpiryDate(selectedReport.dateCreated)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Details & Notes */}
+                    {(selectedReport.details || (selectedReport.note && selectedReport.note.trim())) && (
+                      <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
+                        {selectedReport.details && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-400">Additional Details</label>
+                            <p className="mt-1 text-gray-200">{selectedReport.details}</p>
+                          </div>
+                        )}
+                        {selectedReport.note && selectedReport.note.trim() && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-400">Citizen Note</label>
+                            <p className="mt-1 text-gray-200">{selectedReport.note}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column - Actions & Image */}
+                  <div className="space-y-6">
+                    {/* Status Update Section */}
+                    <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Update Status
+                        </label>
+                        <select
+                          value={selectedStatus[selectedReport._id] || ""}
+                          onChange={(e) =>
+                            setSelectedStatus((prev) => ({
+                              ...prev,
+                              [selectedReport._id]: e.target.value,
+                            }))
+                          }
+                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-200"
+                        >
+                          <option value="">Select new status</option>
+                          <option value="Ongoing">Ongoing</option>
+                          <option value="Resolved">Resolved</option>
+                        </select>
+                      </div>
+
+                      {/* Council Feedback */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Council Feedback
+                        </label>
+                        <textarea
+                          placeholder="Enter feedback for the citizen..."
+                          value={notes[selectedReport._id] || ""}
+                          onChange={(e) =>
+                            setNotes((prev) => ({
+                              ...prev,
+                              [selectedReport._id]: e.target.value,
+                            }))
+                          }
+                          rows={3}
+                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-200"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Image Section */}
+                    {selectedReport.imageUrl && (
+                      <div className="bg-gray-700/20 rounded-lg p-4">
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Uploaded Evidence
+                        </label>
+                        <img
+                          src={selectedReport.imageUrl}
+                          alt="Evidence"
+                          className="w-full rounded-lg max-h-60 object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-gray-700">
+                {showFlagConfirm || showDeleteConfirm ? (
+                  <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
+                    {showFlagConfirm && (
+                      <>
+                        <p className="text-red-300 mb-4">Are you sure you want to flag this report as false?</p>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => handleFlagReport(selectedReport._id)}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                          >
+                            Confirm Flag
+                          </button>
+                          <button
+                            onClick={() => setShowFlagConfirm(false)}
+                            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    {showDeleteConfirm && (
+                      <>
+                        <p className="text-red-300 mb-4">Are you sure you want to delete this report? This cannot be undone.</p>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => handleDelete(selectedReport._id)}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                          >
+                            Confirm Delete
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => handleStatusUpdate(selectedReport._id)}
+                        className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                      >
+                        ✅ Update Status
+                      </button>
+                      {selectedReport.reportStatus !== "Flagged" && !flaggedReports[selectedReport._id] ? (
+                        <button
+                          onClick={() => setShowFlagConfirm(true)}
+                          className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                        >
+                          🚩 Flag as False
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          className="px-6 py-2 bg-gray-600 text-gray-300 rounded-lg cursor-not-allowed"
+                        >
+                          🚩 Flagged
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                      >
+                        🗑️ Delete Report
+                      </button>
+                    </div>
+                    {(selectedReport.reportStatus === "Flagged" || flaggedReports[selectedReport._id]) && (
+                      <div className="bg-gray-700/20 border border-gray-600 rounded-lg p-3">
+                        <p className="text-gray-300 text-sm">
+                          🚩 This report has been flagged as false and is under review
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
