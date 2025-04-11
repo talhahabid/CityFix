@@ -17,6 +17,17 @@ function CouncilHome() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFlagConfirm, setShowFlagConfirm] = useState(false);
 
+  // New helper function to initialize flagged reports
+  const initializeFlaggedReports = (reports) => {
+    const flagged = {};
+    reports.forEach(report => {
+      if (report.reportStatus === "Flagged") {
+        flagged[report._id] = true;
+      }
+    });
+    return flagged;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -27,6 +38,8 @@ function CouncilHome() {
             return report.reportStatus !== "Resolved" || daysPassed < 30;
           });
           setData(filteredData);
+          // Initialize flagged reports on load and refresh
+          setFlaggedReports(initializeFlaggedReports(filteredData));
         } else {
           console.error("Fetched data is not an array:", fetchedData);
         }
@@ -202,7 +215,7 @@ function CouncilHome() {
                       onClick={() => setSelectedReport(report)}
                       className="mt-6 w-full px-4 py-2 bg-blue-600/90 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
                     >
-                      <span>👁️</span> View Details
+                      <span></span> View Details
                     </button>
                   </div>
                 ))}

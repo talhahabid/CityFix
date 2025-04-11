@@ -35,7 +35,7 @@ function CouncilSignin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
+    <div className="min-h-screen overflow-hidden flex items-center justify-center bg-gray-900 px-4">
       <form
         onSubmit={handleSubmit}
         className="bg-gray-800 text-gray-100 p-8 rounded-2xl shadow-lg w-full max-w-md space-y-6"

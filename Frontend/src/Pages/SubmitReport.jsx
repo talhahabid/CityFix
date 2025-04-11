@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { useSignOut } from "../hooks/useSignOut";
 import { useSubmitForm } from "../hooks/useSubmitForm";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +6,6 @@ import "leaflet/dist/leaflet.css";
 
 function SubmitReport() {
   const { submitForm, loading, error } = useSubmitForm();
-  const { signOut } = useSignOut();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -30,6 +28,15 @@ function SubmitReport() {
     }
   }, [isSubmitted, navigate]);
 
+  useEffect(() => {
+    if (isSubmitted) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSubmitted]);
+
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     setFormData((prevData) => ({
@@ -46,7 +53,11 @@ function SubmitReport() {
     }
 
     try {
-      await submitForm(formData);
+      const response = await submitForm(formData);
+      if (response.error === "Duplicate form") {
+        alert("You have already submitted a similar report. Please wait before submitting again.");
+        return;
+      }
       setIsSubmitted(true);
     } catch (err) {
       console.error("Error submitting form:", err);
@@ -72,20 +83,12 @@ function SubmitReport() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Submit a Report</h1>
-          <div className="flex gap-4">
-            <button
-              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white"
-              onClick={() => navigate("/Citizen")}
-            >
-              <span>🏠</span> Back to Home
-            </button>
-            <button
-              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white"
-              onClick={signOut}
-            >
-              Logout
-            </button>
-          </div>
+          <button
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white"
+            onClick={() => navigate("/Citizen")}
+          >
+            <span>🏠</span> Back to Home
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -64,42 +64,48 @@ function ViewReports() {
 
         {/* Main content */}
         <div className="grid md:grid-cols-2 gap-6">
-          {userReports.map((report) => (
-            <div
-              key={report._id}
-              className="bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 flex flex-col h-full"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-semibold text-gray-200">
-                  📝 {report.problemType}
-                </h3>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  report.reportStatus === "Resolved"
-                    ? "bg-green-500/20 text-green-300"
-                    : report.reportStatus === "Ongoing"
-                    ? "bg-yellow-500/20 text-yellow-300"
-                    : "bg-gray-500/20 text-gray-300"
-                }`}>
-                  {report.reportStatus}
-                </span>
-              </div>
-
-              <div className="space-y-2 text-gray-400 flex-grow">
-                <p>📍 {report.location}</p>
-                <p>🕒 {dayjs(report.dateCreated).format("MMMM D, YYYY h:mm A")}</p>
-                {report.reportStatus === "Resolved" && (
-                  <p>⏳ Expires: {calculateExpiryDate(report.dateCreated)}</p>
-                )}
-              </div>
-
-              <button
-                onClick={() => setSelectedReport(report)}
-                className="mt-6 w-full px-4 py-2 bg-blue-600/90 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+          {userReports.length > 0 ? (
+            userReports.map((report) => (
+              <div
+                key={report._id}
+                className="bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 flex flex-col h-full"
               >
-                <span>👁️</span> View Details
-              </button>
-            </div>
-          ))}
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-semibold text-gray-200">
+                    📝 {report.problemType}
+                  </h3>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    report.reportStatus === "Resolved"
+                      ? "bg-green-500/20 text-green-300"
+                      : report.reportStatus === "Ongoing"
+                      ? "bg-yellow-500/20 text-yellow-300"
+                      : "bg-gray-500/20 text-gray-300"
+                  }`}>
+                    {report.reportStatus}
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-gray-400 flex-grow">
+                  <p>📍 {report.location}</p>
+                  <p>🕒 {dayjs(report.dateCreated).format("MMMM D, YYYY h:mm A")}</p>
+                  {report.reportStatus === "Resolved" && (
+                    <p>⏳ Expires: {calculateExpiryDate(report.dateCreated)}</p>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setSelectedReport(report)}
+                  className="mt-6 w-full px-4 py-2 bg-blue-600/90 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <span></span> View Details
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400 text-center col-span-2">
+              🚫 No reports found.
+            </p>
+          )}
         </div>
       </div>
 
@@ -156,38 +162,13 @@ function ViewReports() {
                           </p>
                         </div>
                       )}
+                      {selectedReport.note && selectedReport.note.trim() !== "" && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-400">Additional Details</label>
+                          <p className="mt-1 text-gray-200">{selectedReport.note}</p>
+                        </div>
+                      )}
                     </div>
-
-                    {/* Details Section */}
-                    {selectedReport.details && selectedReport.details.trim() !== "" && (
-                      <div className="bg-gray-700/20 rounded-lg p-4">
-                        <label className="text-sm font-medium text-gray-400">Additional Details</label>
-                        <p className="mt-1 text-gray-200">{selectedReport.details}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Column */}
-                  <div className="space-y-6">
-                    {/* Council Feedback */}
-                    {selectedReport.note && selectedReport.note.trim() && (
-                      <div className="bg-gray-700/20 rounded-lg p-4">
-                        <label className="text-sm font-medium text-gray-400">Council Feedback</label>
-                        <p className="mt-1 text-gray-200">{selectedReport.note}</p>
-                      </div>
-                    )}
-
-                    {/* Image Section */}
-                    {selectedReport.imageUrl && (
-                      <div className="bg-gray-700/20 rounded-lg p-4">
-                        <label className="text-sm font-medium text-gray-400">Uploaded Evidence</label>
-                        <img
-                          src={selectedReport.imageUrl}
-                          alt="Evidence"
-                          className="mt-2 w-full rounded-lg max-h-60 object-cover"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
