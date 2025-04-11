@@ -3,18 +3,21 @@ import { errorHandler } from "../utils/error.js";
 
 export const submitForm = async (req, res, next) => {
   const userId = req.params._id;
-  const { location, problemType, receiveNotification } = req.body;
+  const { location, problemType, receiveNotification, note } = req.body;
+  console.log("NOTE", note);
   const newForm = new Form({
     userId,
     location,
     problemType,
     receiveNotification,
+    note,
   });
 
   try {
     const existingProblemAndLocation = await Form.findOne({
       location,
       problemType,
+      note,
     });
 
     if (existingProblemAndLocation)

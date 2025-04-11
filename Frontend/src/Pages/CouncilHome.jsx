@@ -19,7 +19,7 @@ function CouncilHome() {
         const fetchedData = await getForms();
         if (Array.isArray(fetchedData)) {
           const filteredData = fetchedData.filter((report) => {
-            const daysPassed = dayjs().diff(dayjs(report.dateSubmitted), "day");
+            const daysPassed = dayjs().diff(dayjs(report.dateCreated), "day");
             return report.reportStatus !== "Resolved" || daysPassed < 30;
           });
           setData(filteredData);
@@ -56,16 +56,25 @@ function CouncilHome() {
     }
   };
 
-  const handleFlagReport = (_id) => {
+  const handleFlagReport = async (_id) => {
     const confirm = window.confirm("Are you sure you want to flag this report as false?");
     if (confirm) {
-      setFlaggedReports((prev) => ({ ...prev, [_id]: true }));
-      setData((prev) =>
-        prev.map((report) =>
-          report._id === _id ? { ...report, reportStatus: "Flagged" } : report
-        )
-      );
-      alert("🚩 Report flagged successfully!");
+      try {
+        // Update the status to "Flagged" in the backend
+        await editForm(_id, "Flagged", "This report has been flagged as false.");
+        
+        // Update the local state
+        setFlaggedReports((prev) => ({ ...prev, [_id]: true }));
+        setData((prev) =>
+          prev.map((report) =>
+            report._id === _id ? { ...report, reportStatus: "Flagged" } : report
+          )
+        );
+        alert("🚩 Report flagged successfully!");
+      } catch (err) {
+        console.error("Error flagging report:", err);
+        alert("Failed to flag the report. Please try again.");
+      }
     }
   };
 
@@ -74,8 +83,8 @@ function CouncilHome() {
     Ongoing: "text-yellow-500",
   };
 
-  const calculateExpiryDate = (dateSubmitted) => {
-    return dayjs(dateSubmitted).add(30, "day").format("MMMM D, YYYY");
+  const calculateExpiryDate = (dateCreated) => {
+    return dayjs(dateCreated).add(30, "day").format("MMMM D, YYYY");
   };
 
   const filteredData =
@@ -155,12 +164,12 @@ function CouncilHome() {
                     </p>
                     {report.reportStatus === "Resolved" && (
                       <p className="text-sm text-gray-400 mb-2">
-                        ⏳ Expires on: {calculateExpiryDate(report.dateSubmitted)}
+                        ⏳ Expires on: {calculateExpiryDate(report.dateCreated)}
                       </p>
                     )}
                     <p className="text-sm text-gray-400">
                       🕒 Submitted on:{" "}
-                      {dayjs(report.dateSubmitted).format("MMMM D, YYYY h:mm A")}
+                      {dayjs(report.dateCreated).format("MMMM D, YYYY h:mm A")}
                     </p>
                     {report.details && (
                       <p className="text-gray-400 text-sm mt-2">🗒️ {report.details}</p>
@@ -204,11 +213,11 @@ function CouncilHome() {
             </p>
             <p className="text-sm text-gray-400 mb-2">
               🕒 Submitted on:{" "}
-              {dayjs(selectedReport.dateSubmitted).format("MMMM D, YYYY h:mm A")}
+              {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}
             </p>
             {selectedReport.reportStatus === "Resolved" && (
               <p className="text-sm text-gray-400 mb-2">
-                ⏳ Expires on: {calculateExpiryDate(selectedReport.dateSubmitted)}
+                ⏳ Expires on: {calculateExpiryDate(selectedReport.dateCreated)}
               </p>
             )}
             <p className="text-sm text-gray-400 mb-4">

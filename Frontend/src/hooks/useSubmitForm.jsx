@@ -6,8 +6,8 @@ export const useSubmitForm = () => {
   const { user } = useAuthContext();
   const { loading, error, makeApiCall } = useApi();
 
-  const submitForm = async ({ location, problemType, receiveNotification }) => {
-    console.log(location, problemType, receiveNotification);
+  const submitForm = async ({ location, problemType, receiveNotification, additionalDetails }) => {
+    console.log(location, problemType, receiveNotification, additionalDetails);
 
     if (!user) return;
 
@@ -19,7 +19,7 @@ export const useSubmitForm = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${user.jwtToken}`,
           },
-          body: JSON.stringify({ location, problemType, receiveNotification }),
+          body: JSON.stringify({ location, problemType, receiveNotification, note: additionalDetails }),
         })
       );
 
