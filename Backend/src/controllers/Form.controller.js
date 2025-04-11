@@ -44,8 +44,9 @@ export const getForms = async (req, res, next) => {
 };
 
 export const editFormStatus = async (req, res, next) => {
-  const { _id, note } = req.params;
-  const { reportStatus } = req.body;
+  const { _id } = req.params;
+  const { reportStatus, note } = req.body;
+  console.log(note, "note");
 
   try {
     const form = await Form.findById(_id);

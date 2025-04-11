@@ -9,6 +9,7 @@ export const useEditForm = () => {
     if (!user) return;
 
     try {
+      console.log(note);
       const data = await makeApiCall(() =>
         fetch(`${apiBaseUrl}citizen/editForm/${_id}`, {
           method: "PUT",
