@@ -16,6 +16,7 @@ function CouncilHome() {
   const [selectedReport, setSelectedReport] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFlagConfirm, setShowFlagConfirm] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
   // New helper function to initialize flagged reports
   const initializeFlaggedReports = (reports) => {
@@ -90,19 +91,25 @@ function CouncilHome() {
   };
 
   const handleDelete = async (_id) => {
-    console.log(_id);
     try {
       const success = await deleteForm(_id);
       if (success) {
-        setData((prev) => prev.filter((report) => report._id !== _id));
-        setSelectedReport(null);
         setShowDeleteConfirm(false);
-      } else {
-        throw new Error("Delete operation failed");
+        setSelectedReport(null); // Close the modal immediately
+
+        // Refresh the data by calling getForms
+        const refreshedData = await getForms();
+        if (Array.isArray(refreshedData)) {
+          const filteredData = refreshedData.filter((report) => {
+            const daysPassed = dayjs().diff(dayjs(report.dateCreated), "day");
+            return report.reportStatus !== "Resolved" || daysPassed < 30;
+          });
+          setData(filteredData);
+          setFlaggedReports(initializeFlaggedReports(filteredData));
+        }
       }
     } catch (err) {
       console.error("Error deleting report:", err);
-      alert("Failed to delete report. Please try again.");
     }
   };
 
@@ -396,51 +403,32 @@ function CouncilHome() {
 
               {/* Footer */}
               <div className="p-6 border-t border-gray-700">
-                {showFlagConfirm || showDeleteConfirm ? (
+                {showDeleteConfirm ? (
                   <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
-                    {showFlagConfirm && (
-                      <>
-                        <p className="text-red-300 mb-4">
-                          Are you sure you want to flag this report as false?
-                        </p>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => handleFlagReport(selectedReport._id)}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
-                          >
-                            Confirm Flag
-                          </button>
-                          <button
-                            onClick={() => setShowFlagConfirm(false)}
-                            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </>
-                    )}
-                    {showDeleteConfirm && (
-                      <>
-                        <p className="text-red-300 mb-4">
-                          Are you sure you want to delete this report? This
-                          cannot be undone.
-                        </p>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => handleDelete(selectedReport._id)}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
-                          >
-                            Confirm Delete
-                          </button>
-                          <button
-                            onClick={() => setShowDeleteConfirm(false)}
-                            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </>
-                    )}
+                    <p className="text-red-300 mb-4">
+                      Are you sure you want to delete this report? This cannot
+                      be undone.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleDelete(selectedReport._id)}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                      >
+                        Confirm Delete
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : showDeleteSuccess ? (
+                  <div className="bg-green-900/20 border border-green-500/50 rounded-lg p-4">
+                    <p className="text-green-300">
+                      ✅ Report deleted successfully. Closing shortly...
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">

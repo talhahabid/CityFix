@@ -163,6 +163,25 @@ function ViewReports() {
                         </div>
                       )}
                     </div>
+
+                    {/* Citizen's Note Section */}
+                    {selectedReport.note && selectedReport.note.trim() !== "" && (
+                      <div className="bg-gray-700/20 rounded-lg p-4">
+                        <label className="text-sm font-medium text-gray-400">Additional Details</label>
+                        <p className="mt-1 text-gray-200">{selectedReport.note}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-6">
+                    {/* Council's Feedback Section */}
+                    {selectedReport.councilNote && selectedReport.councilNote.trim() !== "" && (
+                      <div className="bg-gray-700/20 rounded-lg p-4">
+                        <label className="text-sm font-medium text-gray-400">Council's Response</label>
+                        <p className="mt-1 text-gray-200">{selectedReport.councilNote}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
