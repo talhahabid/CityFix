@@ -71,7 +71,7 @@ function Navbar() {
                   }`}
               >
                 <Link
-                  to="/signup"
+                  to="/signin"
                   className="block px-4 py-3 hover:bg-blue-50 hover:text-gray-800 transition-colors duration-200 border-b"
                 >
                   <div className="flex items-center">

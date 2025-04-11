@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGetForm } from "../hooks/useGetForms";
 import { useAuthContext } from "../hooks/useAuthContext";
 
@@ -6,6 +7,7 @@ function ViewReports() {
   const { getForms, loading, error } = useGetForm();
   const { user } = useAuthContext();
   const [userReports, setUserReports] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -19,20 +21,16 @@ function ViewReports() {
     };
 
     fetchReports();
-  }, []); // No dependencies
+  }, []);
 
-  const handleRefresh = () => {
-    const fetchReports = async () => {
-      try {
-        const forms = await getForms();
-        const filteredForms = forms.filter((form) => form.userId === user.user._id);
-        setUserReports(filteredForms);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchReports();
+  const handleRefresh = async () => {
+    try {
+      const forms = await getForms();
+      const filteredForms = forms.filter((form) => form.userId === user.user._id);
+      setUserReports(filteredForms);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -68,6 +66,14 @@ function ViewReports() {
           ))}
         </ul>
       </div>
+
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/citizen")}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg mt-6 transition"
+      >
+        🔙 Back
+      </button>
     </div>
   );
 }

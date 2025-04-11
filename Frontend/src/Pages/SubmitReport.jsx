@@ -8,7 +8,6 @@ import "leaflet/dist/leaflet.css";
 
 function SubmitReport() {
   const { submitForm, loading, error } = useSubmitForm();
-  const { user } = useAuthContext();
   const { signOut } = useSignOut();
   const navigate = useNavigate();
   

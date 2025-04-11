@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSignIn } from "../hooks/useSignIn"; // Assuming useSignIn is the same for council
+import { useSignIn } from "../hooks/useSignIn";
 import { Link } from "react-router-dom";
 
 function CouncilSignin() {
@@ -7,7 +7,7 @@ function CouncilSignin() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    employeeId: "", // New field for employee ID
+    employeeId: "",
   });
 
   const handleChange = (e) => {
@@ -22,8 +22,13 @@ function CouncilSignin() {
     e.preventDefault();
     const { email, password, employeeId } = formData;
 
+    if (employeeId !== "1234567890") {
+      alert("Invalid Employee ID");
+      return;
+    }
+
     try {
-      await signin(email, password, employeeId); // Make sure signin can handle employeeId
+      await signin(email, password);
     } catch (err) {
       console.error(err);
     }
@@ -35,7 +40,7 @@ function CouncilSignin() {
         onSubmit={handleSubmit}
         className="bg-gray-800 text-gray-100 p-8 rounded-2xl shadow-lg w-full max-w-md space-y-6"
       >
-        <h2 className="text-3xl font-semibold text-center">Council Login</h2>
+        <h2 className="text-3xl font-semibold text-center">Council Employee Login</h2>
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-1">
