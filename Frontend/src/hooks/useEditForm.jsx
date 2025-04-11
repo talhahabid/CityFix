@@ -5,11 +5,11 @@ export const useEditForm = () => {
   const { user } = useAuthContext();
   const { loading, error, makeApiCall } = useApi();
 
-  const editForm = async (_id, reportStatus, note) => {
+  const editForm = async (_id, reportStatus, councilNote) => {
     if (!user) return;
 
     try {
-      console.log(note);
+      console.log(councilNote);
       const data = await makeApiCall(() =>
         fetch(`${apiBaseUrl}citizen/editForm/${_id}`, {
           method: "PUT",
@@ -17,7 +17,7 @@ export const useEditForm = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${user.jwtToken}`,
           },
-          body: JSON.stringify({ reportStatus, note }),
+          body: JSON.stringify({ reportStatus, councilNote }),
         })
       );
       return data;

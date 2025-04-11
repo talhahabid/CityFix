@@ -45,15 +45,15 @@ export const getForms = async (req, res, next) => {
 
 export const editFormStatus = async (req, res, next) => {
   const { _id } = req.params;
-  const { reportStatus, note } = req.body;
-  console.log(note, "note");
+  const { reportStatus, councilNote } = req.body;
+  console.log(councilNote, "councilNote");
 
   try {
     const form = await Form.findById(_id);
     if (!form) return next();
 
     form.reportStatus = reportStatus;
-    form.note = note;
+    form.councilNote = councilNote;
 
     await form.save();
 

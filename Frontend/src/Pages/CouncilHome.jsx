@@ -10,7 +10,7 @@ function CouncilHome() {
   const { deleteForm } = useDeleteForm(); // Add this
   const [data, setData] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState({});
-  const [notes, setNotes] = useState({});
+  const [councilNotes, setcouncilNotes] = useState({});
   const [flaggedReports, setFlaggedReports] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedReport, setSelectedReport] = useState(null);
@@ -53,18 +53,18 @@ function CouncilHome() {
 
   const handleStatusUpdate = async (_id) => {
     const newStatus = selectedStatus[_id];
-    const note = notes[_id] || "";
+    const councilNote = councilNotes[_id] || "";
     if (!newStatus) return;
 
     try {
-      const updatedReport = await editForm(_id, newStatus, note);
+      const updatedReport = await editForm(_id, newStatus, councilNote);
       if (updatedReport) {
         setData((prev) =>
           prev.map((report) =>
             report._id === _id ? { ...report, reportStatus: newStatus } : report
           )
         );
-        setNotes((prev) => ({ ...prev, [_id]: "" }));
+        setcouncilNotes((prev) => ({ ...prev, [_id]: "" }));
         setSelectedStatus((prev) => ({ ...prev, [_id]: "" }));
         setSelectedReport(null);
       }
@@ -305,9 +305,9 @@ function CouncilHome() {
                       )}
                     </div>
 
-                    {/* Details & Notes */}
+                    {/* Details & councilNotes */}
                     {(selectedReport.details ||
-                      (selectedReport.note && selectedReport.note.trim())) && (
+                      (selectedReport.councilNote && selectedReport.councilNote.trim())) && (
                       <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
                         {selectedReport.details && (
                           <div>
@@ -319,13 +319,13 @@ function CouncilHome() {
                             </p>
                           </div>
                         )}
-                        {selectedReport.note && selectedReport.note.trim() && (
+                        {selectedReport.councilNote && selectedReport.councilNote.trim() && (
                           <div>
                             <label className="text-sm font-medium text-gray-400">
-                              Citizen Note
+                              Citizen councilNote
                             </label>
                             <p className="mt-1 text-gray-200">
-                              {selectedReport.note}
+                              {selectedReport.councilNote}
                             </p>
                           </div>
                         )}
@@ -364,9 +364,9 @@ function CouncilHome() {
                         </label>
                         <textarea
                           placeholder="Enter feedback for the citizen..."
-                          value={notes[selectedReport._id] || ""}
+                          value={councilNotes[selectedReport._id] || ""}
                           onChange={(e) =>
-                            setNotes((prev) => ({
+                            setcouncilNotes((prev) => ({
                               ...prev,
                               [selectedReport._id]: e.target.value,
                             }))

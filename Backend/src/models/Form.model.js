@@ -37,6 +37,11 @@ const formSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+
+  councilNote: {
+    type: String,
+    default: "",
+  },
 });
 
 const Form = mongoose.model("Form", formSchema);
