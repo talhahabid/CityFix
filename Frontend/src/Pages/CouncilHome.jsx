@@ -84,7 +84,7 @@ function CouncilHome() {
         setSelectedReport(null);
         setShowDeleteConfirm(false);
       } else {
-        throw new Error('Failed to delete report');
+        throw new Error('Delete operation failed');
       }
     } catch (err) {
       console.error("Error deleting report:", err);

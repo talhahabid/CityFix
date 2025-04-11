@@ -77,7 +77,7 @@ function SubmitReport() {
               className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white"
               onClick={() => navigate("/Citizen")}
             >
-              Back to Home
+              <span>🏠</span> Back to Home
             </button>
             <button
               className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white"

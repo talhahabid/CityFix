@@ -40,112 +40,168 @@ function ViewReports() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-100 p-6">
-      {/* Header */}
-      <h1 className="text-3xl font-semibold mb-6">📜 My Reports</h1>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="text-blue-500">📜</span> My Reports
+          </h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/citizen")}
+              className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 shadow transition-all duration-200 flex items-center gap-2"
+            >
+              <span>🏠</span> Back to Home
+            </button>
+            <button
+              onClick={handleRefresh}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow transition-all duration-200 flex items-center gap-2"
+            >
+              <span>🔄</span> Refresh Reports
+            </button>
+          </div>
+        </div>
 
-      {/* Refresh Button */}
-      <button
-        onClick={handleRefresh}
-        className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg mb-6 transition"
-      >
-        🔄 Refresh Reports
-      </button>
-
-      {/* Reports List */}
-      <div className="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg">
-        {loading && <p className="text-xl text-gray-400">Loading...</p>}
-        {error && <p className="text-red-400 text-sm">⚠️ {error}</p>}
-        {userReports.length === 0 && !loading && !error && (
-          <p className="text-xl text-gray-400">No reports found for you.</p>
-        )}
-        <ul className="space-y-4">
+        {/* Main content */}
+        <div className="grid md:grid-cols-2 gap-6">
           {userReports.map((report) => (
-            <li key={report._id} className="bg-gray-700 p-4 rounded-lg">
-              <h2 className="text-xl font-semibold">{report.problemType}</h2>
-              <p className="text-sm text-gray-300">📍 Location: {report.location}</p>
-              <p className="text-sm text-gray-300">📊 Status: {report.reportStatus}</p>
+            <div
+              key={report._id}
+              className="bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 flex flex-col h-full"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-semibold text-gray-200">
+                  📝 {report.problemType}
+                </h3>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  report.reportStatus === "Resolved"
+                    ? "bg-green-500/20 text-green-300"
+                    : report.reportStatus === "Ongoing"
+                    ? "bg-yellow-500/20 text-yellow-300"
+                    : "bg-gray-500/20 text-gray-300"
+                }`}>
+                  {report.reportStatus}
+                </span>
+              </div>
+
+              <div className="space-y-2 text-gray-400 flex-grow">
+                <p>📍 {report.location}</p>
+                <p>🕒 {dayjs(report.dateCreated).format("MMMM D, YYYY h:mm A")}</p>
+                {report.reportStatus === "Resolved" && (
+                  <p>⏳ Expires: {calculateExpiryDate(report.dateCreated)}</p>
+                )}
+              </div>
+
               <button
                 onClick={() => setSelectedReport(report)}
-                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+                className="mt-6 w-full px-4 py-2 bg-blue-600/90 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
               >
-                View Details
+                <span>👁️</span> View Details
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
-
-      {/* Back Button */}
-      <button
-        onClick={() => navigate("/citizen")}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg mt-6 transition"
-      >
-        🔙 Back
-      </button>
 
       {/* Modal */}
       {selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-3/4 max-w-lg">
-            <h2 className="text-2xl font-bold text-gray-200 mb-4">
-              📝 {selectedReport.problemType}
-            </h2>
-            <p className="text-sm text-gray-400 mb-2">
-              📍 Location: {selectedReport.location}
-            </p>
-            <p className="text-sm text-gray-400 mb-2">
-              🕒 Submitted on:{" "}
-              {dayjs(selectedReport.dateSubmitted).format("MMMM D, YYYY h:mm A")}
-            </p>
-            {selectedReport.reportStatus === "Resolved" && (
-              <p className="text-sm text-gray-400 mb-2">
-                ⏳ Expires on: {calculateExpiryDate(selectedReport.dateSubmitted)}
-              </p>
-            )}
-            <p className="text-sm text-gray-400 mb-4">
-              📊 Status:{" "}
-              <span
-                className={`inline-block px-2 py-1 rounded text-sm font-medium ${
-                  selectedReport.reportStatus === "Resolved"
-                    ? "text-green-500"
-                    : "text-yellow-500"
-                }`}
-              >
-                {selectedReport.reportStatus}
-              </span>
-            </p>
-            {selectedReport.additionalDetails && (
-              <p className="text-sm text-gray-400 mb-4">
-                🗒️ Additional Details: {selectedReport.additionalDetails}
-              </p>
-            )}
-            {selectedReport.imageUrl && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-400 mb-2">📷 Uploaded Image:</p>
-                <img
-                  src={selectedReport.imageUrl}
-                  alt="Uploaded evidence"
-                  className="w-full rounded-lg max-h-64 object-cover"
-                />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="min-h-screen px-4 py-8 flex items-center justify-center">
+            <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl relative">
+              {/* Header */}
+              <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-200 mb-1">
+                    📝 {selectedReport.problemType}
+                  </h2>
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                    selectedReport.reportStatus === "Resolved"
+                      ? "bg-green-500/20 text-green-300"
+                      : selectedReport.reportStatus === "Ongoing"
+                      ? "bg-yellow-500/20 text-yellow-300"
+                      : "bg-red-500/20 text-red-300"
+                  }`}>
+                    {selectedReport.reportStatus}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSelectedReport(null)}
+                  className="p-2 hover:bg-gray-700 rounded-full transition-colors text-gray-400 hover:text-gray-200"
+                >
+                  ❌
+                </button>
               </div>
-            )}
-            {selectedReport.receiveNotification && (
-              <p className="text-sm text-gray-400 mb-4">
-                📩 Notifications Enabled: Yes
-              </p>
-            )}
-            {selectedReport.note && (
-              <p className="text-sm text-gray-400 mb-4">
-                📝 Council Feedback: {selectedReport.note}
-              </p>
-            )}
-            <button
-              onClick={() => setSelectedReport(null)}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
-            >
-              ❌ Close
-            </button>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-6">
+                    <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-400">Location</label>
+                        <p className="mt-1 text-gray-200">📍 {selectedReport.location}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-400">Submitted On</label>
+                        <p className="mt-1 text-gray-200">
+                          🕒 {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}
+                        </p>
+                      </div>
+                      {selectedReport.reportStatus === "Resolved" && (
+                        <div>
+                          <label className="text-sm font-medium text-gray-400">Expires On</label>
+                          <p className="mt-1 text-gray-200">
+                            ⏳ {calculateExpiryDate(selectedReport.dateCreated)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Details Section */}
+                    {selectedReport.details && selectedReport.details.trim() !== "" && (
+                      <div className="bg-gray-700/20 rounded-lg p-4">
+                        <label className="text-sm font-medium text-gray-400">Additional Details</label>
+                        <p className="mt-1 text-gray-200">{selectedReport.details}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-6">
+                    {/* Council Feedback */}
+                    {selectedReport.note && selectedReport.note.trim() && (
+                      <div className="bg-gray-700/20 rounded-lg p-4">
+                        <label className="text-sm font-medium text-gray-400">Council Feedback</label>
+                        <p className="mt-1 text-gray-200">{selectedReport.note}</p>
+                      </div>
+                    )}
+
+                    {/* Image Section */}
+                    {selectedReport.imageUrl && (
+                      <div className="bg-gray-700/20 rounded-lg p-4">
+                        <label className="text-sm font-medium text-gray-400">Uploaded Evidence</label>
+                        <img
+                          src={selectedReport.imageUrl}
+                          alt="Evidence"
+                          className="mt-2 w-full rounded-lg max-h-60 object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-gray-700">
+                <button
+                  onClick={() => setSelectedReport(null)}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
