@@ -122,7 +122,7 @@ function ViewReports() {
                   onClick={() => setSelectedReport(report)}
                   className="mt-6 w-full px-4 py-2 bg-blue-600/90 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <span>👁️</span> View Details
+                  View Details
                 </button>
               </div>
             ))
@@ -166,14 +166,94 @@ function ViewReports() {
               {/* Content */}
               <div className="p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="space-y-6">
-                    <p>📍 {selectedReport.location}</p>
-                    <p>🕒 {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}</p>
+                  {/* Left Column - Basic Info */}
+                  <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-400">
+                        Location
+                      </label>
+                      <p className="mt-1 text-gray-200">
+                        📍 {selectedReport.location}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-400">
+                        Submitted On
+                      </label>
+                      <p className="mt-1 text-gray-200">
+                        🕒 {dayjs(selectedReport.dateCreated).format("MMMM D, YYYY h:mm A")}
+                      </p>
+                    </div>
+                    {selectedReport.reportStatus === "Resolved" && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-400">
+                          Expires On
+                        </label>
+                        <p className="mt-1 text-gray-200">
+                          ⏳ {calculateExpiryDate(selectedReport.dateCreated)}
+                        </p>
+                      </div>
+                    )}
                     {selectedReport.reportStatus === "Flagged" && (
-                      <p className="text-red-400 font-semibold">🚨 This report has been flagged by the council.</p>
+                      <div>
+                        <label className="text-sm font-medium text-red-400">
+                          Warning
+                        </label>
+                        <p className="mt-1 text-red-300">
+                          🚨 This report has been flagged by the council.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column - Details & Notes */}
+                  <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
+                    {selectedReport.details && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-400">
+                          Additional Details
+                        </label>
+                        <p className="mt-1 text-gray-200">
+                          {selectedReport.details}
+                        </p>
+                      </div>
+                    )}
+                    {selectedReport.note && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-400">
+                          Your Note
+                        </label>
+                        <p className="mt-1 text-gray-200">
+                          {selectedReport.note}
+                        </p>
+                      </div>
+                    )}
+                    {selectedReport.councilNote && selectedReport.councilNote.trim() && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-400">
+                          Council Feedback
+                        </label>
+                        <p className="mt-1 text-gray-200">
+                          {selectedReport.councilNote}
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
+
+                {/* Image Section if available */}
+                {selectedReport.imageUrl && (
+                  <div className="mt-6 bg-gray-700/20 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                      Uploaded Evidence
+                    </label>
+                    <img
+                      src={selectedReport.imageUrl}
+                      alt="Report Evidence"
+                      className="w-full rounded-lg max-h-60 object-cover"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Footer */}

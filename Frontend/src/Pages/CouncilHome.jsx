@@ -337,8 +337,9 @@ function CouncilHome() {
                       )}
                     </div>
 
-                    {/* Details & councilNotes */}
+                    {/* Details & Notes */}
                     {(selectedReport.details ||
+                      selectedReport.note ||
                       (selectedReport.councilNote && selectedReport.councilNote.trim())) && (
                       <div className="bg-gray-700/20 rounded-lg p-4 space-y-4">
                         {selectedReport.details && (
@@ -351,10 +352,20 @@ function CouncilHome() {
                             </p>
                           </div>
                         )}
+                        {selectedReport.note && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-400">
+                              Citizen Note
+                            </label>
+                            <p className="mt-1 text-gray-200">
+                              {selectedReport.note}
+                            </p>
+                          </div>
+                        )}
                         {selectedReport.councilNote && selectedReport.councilNote.trim() && (
                           <div>
                             <label className="text-sm font-medium text-gray-400">
-                              Citizen councilNote
+                              Council Note
                             </label>
                             <p className="mt-1 text-gray-200">
                               {selectedReport.councilNote}
